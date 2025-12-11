@@ -6,10 +6,14 @@ const SESSION_COOKIE_NAME = "session_token"
 
 export type UserSession = {
   id: string
-  email: string
+  email: string | null
+  phone: string | null
   name: string | null
-  role?: "GERENTE" | "ATLETA"
-  teamName?: string
+  teamName: string | null
+  role: "ADMIN" | "GERENTE" | "ATLETA"
+  managerId?: string
+  athleteId?: string
+  categoryIds?: string[]
 }
 
 export async function getSession(): Promise<UserSession | null> {
@@ -24,7 +28,20 @@ export async function getSession(): Promise<UserSession | null> {
     const session = await prisma.session.findUnique({
       where: { token: sessionToken },
       include: {
-        user: true,
+        user: {
+          include: {
+            manager: {
+              include: {
+                categories: true,
+              },
+            },
+            athlete: {
+              include: {
+                categories: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -32,14 +49,34 @@ export async function getSession(): Promise<UserSession | null> {
       return null
     }
 
-    // Por enquanto, vamos usar dados mockados para role e teamName
-    // Isso pode ser expandido depois com migrations do Prisma
+    const { user } = session
+
+    // Determina o tipo de usuário e categorias
+    let role: "ADMIN" | "GERENTE" | "ATLETA" = "ADMIN"
+    let managerId: string | undefined
+    let athleteId: string | undefined
+    let categoryIds: string[] = []
+
+    if (user.manager) {
+      role = "GERENTE"
+      managerId = user.manager.id
+      categoryIds = user.manager.categories.map((mc) => mc.categoryId)
+    } else if (user.athlete) {
+      role = "ATLETA"
+      athleteId = user.athlete.id
+      categoryIds = user.athlete.categories.map((ac) => ac.categoryId)
+    }
+
     return {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-      role: "GERENTE" as const, // TODO: Adicionar campo role no schema
-      teamName: "Minha Equipe", // TODO: Adicionar relação com Team no schema
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      name: user.name,
+      teamName: user.teamName,
+      role,
+      managerId,
+      athleteId,
+      categoryIds,
     }
   } catch (error) {
     console.error("[GET_SESSION]", error)

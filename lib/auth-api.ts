@@ -8,12 +8,9 @@ type RegisterPayload = {
 }
 
 type LoginPayload = {
-  email: string
+  email?: string
+  phone?: string
   password: string
-}
-
-type ForgotPasswordPayload = {
-  email: string
 }
 
 export const authApi = {
@@ -21,7 +18,5 @@ export const authApi = {
     postJson(routes.auth.register, payload),
   login: (payload: LoginPayload) =>
     postJson(routes.auth.login, payload),
-  forgotPassword: (payload: ForgotPasswordPayload) =>
-    postJson(routes.auth.forgotPassword, payload),
 }
 

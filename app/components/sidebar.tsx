@@ -28,27 +28,27 @@ const navigationItems = [
     icon: BarChart3,
   },
   {
-    label: "Gestão de Categorias",
+    label: "Categorias",
     href: "/home/categorias",
     icon: Layers,
   },
   {
-    label: "Gestão de Gerentes",
+    label: "Gerentes",
     href: "/home/gerentes",
     icon: UserCog,
   },
   {
-    label: "Gestão de Atletas",
+    label: "Atletas",
     href: "/home/atletas",
     icon: Users,
   },
   {
-    label: "Central de Eventos",
+    label: "Eventos",
     href: "/home/eventos",
     icon: Trophy,
   },
   {
-    label: "Central de Despesas",
+    label: "Despesas",
     href: "/home/despesas",
     icon: Receipt,
   },
@@ -71,7 +71,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border bg-card p-6 flex flex-col">
+    <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 border-r border-border bg-card p-6 flex-col">
       {/* Logo */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-primary">Team Manager</h1>
@@ -101,30 +101,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Settings and Logout */}
-      <div className="space-y-2 border-t border-border pt-4">
-        <Link
-          href="/home/settings"
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-            pathname === "/home/settings"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-          )}
-        >
-          <Settings className="h-5 w-5" />
-          <span>Settings</span>
-        </Link>
-
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-          className="w-full justify-start text-muted-foreground hover:text-destructive"
-        >
-          <LogOut className="h-5 w-5 mr-3" />
-          <span>Sair</span>
-        </Button>
-      </div>
+      
     </aside>
   )
 }

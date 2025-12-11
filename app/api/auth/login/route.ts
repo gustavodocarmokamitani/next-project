@@ -25,16 +25,53 @@ const createSession = async (userId: string) => {
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json()
+    const { email, phone, password } = await req.json()
 
-    if (!email || !password) {
+    if (!password) {
       return NextResponse.json(
-        { error: "Email e senha são obrigatórios." },
+        { error: "Senha é obrigatória." },
         { status: 400 },
       )
     }
 
-    const user = await prisma.user.findUnique({ where: { email } })
+    if (!email && !phone) {
+      return NextResponse.json(
+        { error: "Email ou telefone são obrigatórios." },
+        { status: 400 },
+      )
+    }
+
+    // Busca usuário por email ou telefone
+    let user = null
+    if (email) {
+      user = await prisma.user.findUnique({ 
+        where: { email },
+        include: {
+          manager: true,
+          athlete: true,
+        },
+      })
+    } else if (phone) {
+      // Remove caracteres não numéricos do telefone
+      const cleanPhone = phone.replace(/\D/g, "")
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { phone: phone },
+            { phone: cleanPhone },
+            { manager: { phone: phone } },
+            { manager: { phone: cleanPhone } },
+            { athlete: { phone: phone } },
+            { athlete: { phone: cleanPhone } },
+          ],
+        },
+        include: {
+          manager: true,
+          athlete: true,
+        },
+      })
+    }
+
     if (!user) {
       return NextResponse.json(
         { error: "Credenciais inválidas." },
@@ -52,13 +89,32 @@ export async function POST(req: Request) {
 
     const session = await createSession(user.id)
 
+    // Determina o tipo de usuário
+    let role: "ADMIN" | "GERENTE" | "ATLETA" = "ADMIN"
+    if (user.manager) {
+      role = "GERENTE"
+    } else if (user.athlete) {
+      role = "ATLETA"
+    }
+
+    // Determina redirecionamento baseado no role
+    let redirectPath = "/home"
+    if (role === "GERENTE") {
+      redirectPath = "/gerente"
+    } else if (role === "ATLETA") {
+      redirectPath = "/atleta"
+    }
+
     const response = NextResponse.json(
       {
         user: {
           id: user.id,
           email: user.email,
+          phone: user.phone,
           name: user.name,
+          role,
         },
+        redirectPath,
       },
       { status: 200 },
     )

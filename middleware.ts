@@ -7,7 +7,7 @@ const SESSION_COOKIE_NAME = "session_token"
 const publicRoutes = ["/", "/login", "/register"]
 
 // Rotas privadas que precisam de autenticação
-const privateRoutes = ["/home", "/dashboard"]
+const privateRoutes = ["/home", "/dashboard", "/gerente", "/atleta"]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

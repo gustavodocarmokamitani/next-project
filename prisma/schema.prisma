@@ -10,12 +10,17 @@ datasource db {
 model User {
   id             String    @id @default(uuid())
   name           String?
-  email          String    @unique
+  email          String?   @unique
+  phone          String?   @unique
   password       String
   emailVerified  Boolean   @default(false)
+  teamName       String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-  sessions       Session[]
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  manager             Manager?
+  athlete             Athlete?
 }
 
 model Session {
@@ -26,5 +31,179 @@ model Session {
   updatedAt DateTime @updatedAt
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  code      String   // Código de 6 dígitos
+  userId    String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id        String            @id @default(uuid())
+  name      String            @unique
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  managers  ManagerCategory[]
+  athletes  CategoryAthlete[]
+  events    EventCategory[]
+  payments  PaymentCategory[]
+}
+
+model Manager {
+  id         String            @id @default(uuid())
+  firstName  String
+  lastName   String
+  phone      String            @unique
+  userId     String            @unique
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories ManagerCategory[]
+}
+
+model ManagerCategory {
+  managerId  String
+  categoryId String
+  manager    Manager  @relation(fields: [managerId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([managerId, categoryId])
+}
+
+model ManagerInvite {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+}
+
+model Athlete {
+  id              String            @id @default(uuid())
+  firstName       String
+  lastName        String
+  phone           String            @unique
+  federationId    String?
+  birthDate       DateTime
+  userId          String            @unique
+  shirtNumber     String?
+  confederationId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories      CategoryAthlete[]
+  attendances     EventAttendance[]
+}
+
+model CategoryAthlete {
+  athleteId  String
+  categoryId String
+  athlete    Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([athleteId, categoryId])
+}
+
+model AthleteInvite {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+}
+
+model Event {
+  id          String          @id @default(uuid())
+  name        String
+  date        DateTime
+  location    String?
+  type        String          // Treinamento, Campeonato, Outros
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  categories  EventCategory[]
+  payments    Payment[]
+  attendances EventAttendance[]
+}
+
+model EventCategory {
+  eventId    String
+  categoryId String
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, categoryId])
+}
+
+model Payment {
+  id         String            @id @default(uuid())
+  name       String
+  dueDate    DateTime
+  isFinalized Boolean          @default(false)
+  eventId    String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  event      Event?            @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  categories PaymentCategory[]
+  items      PaymentItem[]
+}
+
+model PaymentCategory {
+  paymentId  String
+  categoryId String
+  payment    Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([paymentId, categoryId])
+}
+
+model PaymentItem {
+  id             String  @id @default(uuid())
+  name           String
+  value          Float
+  quantityEnabled Boolean @default(false)
+  required       Boolean @default(false)
+  paymentId      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  payment        Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  athletePayments AthletePaymentItem[]
+}
+
+model EventAttendance {
+  id              String               @id @default(uuid())
+  eventId         String
+  athleteId       String
+  confirmed       Boolean              @default(false)
+  confirmedAt     DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  event           Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  athlete         Athlete              @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  paymentItems    AthletePaymentItem[]
+
+  @@unique([eventId, athleteId])
+}
+
+model AthletePaymentItem {
+  id                String          @id @default(uuid())
+  attendanceId      String
+  paymentItemId     String
+  confirmedQuantity Int             @default(0)  // Quantidade confirmada na presença
+  paidQuantity      Int             @default(0)  // Quantidade realmente paga/consumida
+  paid              Boolean         @default(false)
+  paidAt            DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  attendance        EventAttendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  paymentItem       PaymentItem     @relation(fields: [paymentItemId], references: [id], onDelete: Cascade)
+
+  @@unique([attendanceId, paymentItemId])
 }
 
