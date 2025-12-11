@@ -5,7 +5,11 @@ import { Navbar } from "./navbar"
 
 export function NavbarWrapper() {
   const pathname = usePathname()
-  const hideNavbar = pathname === "/login" || pathname === "/register"
+  // Esconde navbar em login/register e nas rotas privadas (que têm sidebar)
+  const hideNavbar =
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname.startsWith("/home")
 
   if (hideNavbar) {
     return null

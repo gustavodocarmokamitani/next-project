@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +10,8 @@ import { authApi } from "@/lib/auth-api"
 import { LogIn, Mail, Lock } from "lucide-react"
 
 export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -21,6 +24,10 @@ export default function LoginPage() {
     
     try {
       await authApi.login({ email, password })
+      // Redireciona para a página solicitada ou para /home
+      const redirectTo = searchParams.get("redirect") || "/home"
+      router.push(redirectTo)
+      router.refresh()
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao autenticar"
       setError(message)

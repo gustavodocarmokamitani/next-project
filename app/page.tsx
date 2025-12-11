@@ -21,7 +21,7 @@ export default function Home() {
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
       <section id="home" className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-20 scroll-mt-20">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+        <div className="max-w-6xl mx-auto text-center space-y-8">
           {/* Tag */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border text-muted-foreground text-sm">
             <Users className="h-4 w-4" />
@@ -29,7 +29,7 @@ export default function Home() {
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-5xl md:text-5xl lg:text-5xl font-bold text-foreground leading-tight">
+          <h1 className="text-5xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
             Simplifique a Gestão da Sua Equipe
           </h1>
 
