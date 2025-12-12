@@ -84,20 +84,27 @@ export function MultiSelect({
         </span>
         <div className="flex items-center gap-1 flex-shrink-0">
           {selected.length > 0 && (
-            <div className="flex items-center gap-1 flex-wrap">
+            <div className="flex items-center gap-1 flex-wrap" onClick={(e) => e.stopPropagation()}>
               {selectedOptions.slice(0, 2).map((opt) => (
                 <span
                   key={opt.id}
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-xs text-foreground"
                 >
                   {opt.nome}
-                  <button
-                    type="button"
+                  <span
+                    role="button"
+                    tabIndex={0}
                     onClick={(e) => removeOption(opt.id, e)}
-                    className="hover:bg-muted-foreground/20 rounded-full p-0.5"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        removeOption(opt.id, e as any)
+                      }
+                    }}
+                    className="hover:bg-muted-foreground/20 rounded-full p-0.5 cursor-pointer"
                   >
                     <X className="h-3 w-3" />
-                  </button>
+                  </span>
                 </span>
               ))}
               {selectedOptions.length > 2 && (

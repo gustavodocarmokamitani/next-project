@@ -47,6 +47,11 @@ export async function createEventoGerente(formData: FormData) {
 
   const dateObj = new Date(date)
 
+  // Busca o organizationId do gerente
+  if (!session.organizationId) {
+    redirect("/gerente/eventos/adicionar?error=Organização não encontrada.")
+  }
+
   // Cria o evento
   const evento = await prisma.event.create({
     data: {
@@ -55,6 +60,7 @@ export async function createEventoGerente(formData: FormData) {
       location: location && typeof location === "string" ? location.trim() : null,
       type: type.trim(),
       description: description && typeof description === "string" ? description.trim() : null,
+      organizationId: session.organizationId,
       categories: {
         create: categoriasSelecionadas.map((catId) => ({
           categoryId: catId,

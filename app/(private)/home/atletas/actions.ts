@@ -225,6 +225,12 @@ export async function deleteAtleta(id: string) {
 }
 
 export async function generateAtletaInviteLink(formData: FormData) {
+  const session = await getSession()
+
+  if (!session || !session.organizationId || session.role !== "ADMIN") {
+    redirect("/login")
+  }
+
   const categorias = formData.getAll("categorias")
 
   if (categorias.length === 0) {
@@ -239,6 +245,7 @@ export async function generateAtletaInviteLink(formData: FormData) {
     data: {
       token,
       expiresAt,
+      organizationId: session.organizationId,
     },
   })
 

@@ -23,10 +23,15 @@ export async function getCampeonatos(): Promise<CampeonatoDTO[]> {
     return []
   }
 
+  // Se for ADMIN, precisa ter organizationId
+  if (session.role === "ADMIN" && !session.organizationId) {
+    return []
+  }
+
   // SYSTEM pode ver todos, ADMIN apenas da sua organização
   const whereClause = session.role === "SYSTEM" 
     ? {} 
-    : { organizerId: session.organizationId }
+    : { organizerId: session.organizationId! }
 
   // Busca campeonatos (SYSTEM vê todos, ADMIN apenas da sua organização)
   const campeonatos = await (prisma as any).championship.findMany({
@@ -44,19 +49,21 @@ export async function getCampeonatos(): Promise<CampeonatoDTO[]> {
     },
   })
 
-  return campeonatos.map((campeonato: any): CampeonatoDTO => ({
-    id: campeonato.id,
-    nome: campeonato.name,
-    descricao: campeonato.description,
-    dataInicio: campeonato.startDate,
-    dataFim: campeonato.endDate,
-    local: campeonato.location,
-    organizador: {
-      id: campeonato.organizer.id,
-      nome: campeonato.organizer.name,
-    },
-    createdAt: campeonato.createdAt,
-  }))
+  return campeonatos
+    .filter((campeonato: any) => campeonato.organizer !== null) // Filtra campeonatos sem organizador (caso existam dados inconsistentes)
+    .map((campeonato: any): CampeonatoDTO => ({
+      id: campeonato.id,
+      nome: campeonato.name,
+      descricao: campeonato.description,
+      dataInicio: campeonato.startDate,
+      dataFim: campeonato.endDate,
+      local: campeonato.location,
+      organizador: {
+        id: campeonato.organizer.id,
+        nome: campeonato.organizer.name,
+      },
+      createdAt: campeonato.createdAt,
+    }))
 }
 
 export async function getCampeonatoById(id: string): Promise<CampeonatoDTO | null> {
@@ -66,10 +73,15 @@ export async function getCampeonatoById(id: string): Promise<CampeonatoDTO | nul
     return null
   }
 
+  // Se for ADMIN, precisa ter organizationId
+  if (session.role === "ADMIN" && !session.organizationId) {
+    return null
+  }
+
   // SYSTEM pode ver qualquer campeonato, ADMIN apenas da sua organização
   const whereClause = session.role === "SYSTEM"
     ? { id }
-    : { id, organizerId: session.organizationId }
+    : { id, organizerId: session.organizationId! }
 
   const campeonato = await (prisma as any).championship.findFirst({
     where: whereClause,
@@ -83,7 +95,7 @@ export async function getCampeonatoById(id: string): Promise<CampeonatoDTO | nul
     },
   })
 
-  if (!campeonato) {
+  if (!campeonato || !campeonato.organizer) {
     return null
   }
 

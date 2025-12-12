@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Combobox } from "@/components/ui/combobox"
-import { MultiSelect } from "@/components/ui/multi-select"
 import { DespesasCampeonatoForm, type DespesaItem } from "./despesas-campeonato-form"
+import { CategoriasCampeonatoForm } from "./categorias-campeonato-form"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -16,23 +16,39 @@ type Organization = {
   name: string
 }
 
-type Categoria = {
+type CategoriaGlobal = {
   id: string
   nome: string
+  tipo: "global"
+}
+
+type CategoriaOrganizacao = {
+  id: string
+  nome: string
+  tipo: "organizacao"
 }
 
 type CampeonatoFormProps = {
-  categorias: Categoria[]
+  categoriasGlobais: CategoriaGlobal[]
+  categoriasOrganizacao: CategoriaOrganizacao[]
 }
 
-export function CampeonatoForm({ categorias }: CampeonatoFormProps) {
+export function CampeonatoForm({ categoriasGlobais, categoriasOrganizacao }: CampeonatoFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSystem, setIsSystem] = useState(false)
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>("")
   const [despesas, setDespesas] = useState<DespesaItem[]>([])
-  const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<string[]>([])
+  const [categoriasState, setCategoriasState] = useState<{
+    globais: string[]
+    organizacao: string[]
+    custom: Array<{ id: string; nome: string; allowUpgrade: boolean }>
+  }>({
+    globais: [],
+    organizacao: [],
+    custom: [],
+  })
 
   useEffect(() => {
     // Verifica se é SYSTEM e busca organizações
@@ -64,8 +80,18 @@ export function CampeonatoForm({ categorias }: CampeonatoFormProps) {
         }
         
         // Adiciona as categorias ao FormData
-        categoriasSelecionadas.forEach((categoriaId) => {
+        // Categorias globais e organizacionais (com categoryId)
+        categoriasState.globais.forEach((categoriaId) => {
           formData.append("categorias", categoriaId)
+        })
+        categoriasState.organizacao.forEach((categoriaId) => {
+          formData.append("categorias", categoriaId)
+        })
+        
+        // Categorias custom (sem categoryId, apenas nome e allowUpgrade)
+        categoriasState.custom.forEach((custom, index) => {
+          formData.append(`categoriasCustom[${index}][nome]`, custom.nome)
+          formData.append(`categoriasCustom[${index}][allowUpgrade]`, custom.allowUpgrade ? "true" : "false")
         })
         
         // Adiciona as despesas ao FormData
@@ -167,17 +193,13 @@ export function CampeonatoForm({ categorias }: CampeonatoFormProps) {
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="categorias">Categorias que podem participar *</Label>
-          <MultiSelect
-            options={categorias}
-            selected={categoriasSelecionadas}
-            onChange={setCategoriasSelecionadas}
-            placeholder="Selecione as categorias..."
+        {/* Seção de Categorias */}
+        <div className="pt-4 border-t border-border">
+          <CategoriasCampeonatoForm
+            categoriasGlobais={categoriasGlobais}
+            categoriasOrganizacao={categoriasOrganizacao}
+            onCategoriasChange={setCategoriasState}
           />
-          <p className="text-xs text-muted-foreground">
-            Selecione as categorias que poderão participar deste campeonato
-          </p>
         </div>
       </div>
 

@@ -5,6 +5,8 @@ import { getSession } from "@/lib/get-session"
 export type CategoriaDTO = {
   id: string
   nome: string
+  isGlobal?: boolean // true se for categoria global (organizationId: null)
+  organizationId?: string | null
 }
 
 export async function getCategoriasDoGerente(): Promise<CategoriaDTO[]> {
@@ -25,13 +27,15 @@ export async function getCategoriasDoGerente(): Promise<CategoriaDTO[]> {
         },
       },
     },
-    select: { id: true, name: true },
+    select: { id: true, name: true, organizationId: true },
     orderBy: { name: "asc" },
   })
 
   return categorias.map((categoria) => ({
     id: categoria.id,
     nome: categoria.name,
+    isGlobal: categoria.organizationId === null,
+    organizationId: categoria.organizationId,
   }))
 }
 

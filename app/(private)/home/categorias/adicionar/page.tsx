@@ -1,19 +1,30 @@
 import { redirect } from "next/navigation"
 import { Suspense } from "react"
 import { getSession } from "@/lib/get-session"
-import { createCategoria } from "../actions"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { CategoriaForm } from "./categoria-form"
 import { BackButton } from "@/app/components/back-button"
 import { AlertMessage } from "@/app/components/alert-message"
-import Link from "next/link"
 
 export default async function AdicionarCategoriaPage() {
   const session = await getSession()
 
   if (!session) {
     redirect("/login")
+  }
+
+  // Se for SYSTEM, redireciona para a página de categorias globais
+  if (session.role === "SYSTEM") {
+    redirect("/home/sistema/categorias/adicionar")
+  }
+
+  // Apenas ADMINs podem adicionar categorias à organização
+  if (session.role !== "ADMIN") {
+    redirect("/login?error=Acesso negado. Apenas administradores podem adicionar categorias.")
+  }
+
+  // ADMIN precisa ter uma organização associada
+  if (!session.organizationId) {
+    redirect("/home/categorias?error=Você precisa estar associado a uma organização para adicionar categorias.")
   }
 
   return (
@@ -27,10 +38,10 @@ export default async function AdicionarCategoriaPage() {
           <BackButton className="md:hidden w-full" href="/home/categorias" />
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              Adicionar Categoria
+              Criar Categoria Custom
             </h1>
             <p className="text-muted-foreground mt-2">
-              Preencha os dados da nova categoria
+              Crie uma categoria exclusiva para sua organização
             </p>
           </div>
         </div>
@@ -38,33 +49,7 @@ export default async function AdicionarCategoriaPage() {
 
       {/* Form Card */}
       <div className="rounded-lg border border-border bg-card p-8">
-        <form action={createCategoria} className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              Dados da Categoria
-            </h2>
-          </div>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome">Nome da Categoria *</Label>
-              <Input
-                id="nome"
-                name="nome"
-                placeholder="Ex: Adulto, Sub-18, Sub-21"
-                required
-              />
-            </div>
-
-          </div>
-          <div className="flex gap-4 pt-4">
-            <Button type="submit" className="flex-1">
-              Salvar
-            </Button>
-            <Button type="button" variant="outline" asChild>
-              <Link href="/home/categorias">Cancelar</Link>
-            </Button>
-          </div>
-        </form>
+        <CategoriaForm />
       </div>
     </div>
   )

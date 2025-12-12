@@ -1,10 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { X } from "lucide-react"
-import { DeleteCategoriaDialog } from "./delete-categoria-dialog"
+import { Globe } from "lucide-react"
 import type { CategoriaDTO } from "./queries"
 
 type CategoriaCardProps = {
@@ -12,36 +9,24 @@ type CategoriaCardProps = {
 }
 
 export function CategoriaCard({ categoria }: CategoriaCardProps) {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const isGlobal = categoria.isGlobal === true
 
   return (
-    <>
-      <Card className="hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-foreground">
-              {categoria.nome}
-            </h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive"
-              onClick={() => setDeleteDialogOpen(true)}
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Remover categoria</span>
-            </Button>
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            {isGlobal && <Globe className="h-5 w-5 text-primary" />}
+            <h3 className="font-semibold text-lg">{categoria.nome}</h3>
           </div>
-        </CardContent>
-      </Card>
-
-      <DeleteCategoriaDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        categoriaId={categoria.id}
-        categoriaNome={categoria.nome}
-      />
-    </>
+          {isGlobal && (
+            <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs">
+              Global
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

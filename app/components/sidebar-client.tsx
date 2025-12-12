@@ -51,6 +51,14 @@ const navigationItems = [
     icon: Trophy,
   },
   {
+    label: "Pagamentos",
+    href: "/home/despesas",
+    icon: Receipt,
+  },
+]
+
+const campeonatosItems = [
+  {
     label: "Campeonatos",
     href: "/home/campeonatos",
     icon: Medal,
@@ -59,11 +67,6 @@ const navigationItems = [
     label: "Inscrições",
     href: "/home/campeonatos/inscricoes",
     icon: Users,
-  },
-  {
-    label: "Pagamentos",
-    href: "/home/despesas",
-    icon: Receipt,
   },
 ]
 
@@ -105,9 +108,38 @@ export function SidebarClient() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-2">
+        {/* Seção Principal */}
         {navigationItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href || (item.href !== "/home" && pathname?.startsWith(item.href))
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span>{item.label}</span>
+            </Link>
+          )
+        })}
+        
+        {/* Seção Campeonatos */}
+        <div className="my-4 border-t border-border" />
+        <div className="px-2 py-1">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Campeonatos
+          </p>
+        </div>
+        {campeonatosItems.map((item) => {
+          const Icon = item.icon
+          const isActive = pathname === item.href || pathname?.startsWith(item.href)
 
           return (
             <Link
@@ -130,6 +162,11 @@ export function SidebarClient() {
         {isSystem && (
           <>
             <div className="my-4 border-t border-border" />
+            <div className="px-2 py-1">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Sistema
+              </p>
+            </div>
             <Link
               href="/home/sistema"
               className={cn(

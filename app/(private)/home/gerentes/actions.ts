@@ -151,6 +151,12 @@ export async function deleteGerente(id: string) {
 }
 
 export async function generateInviteLink(formData: FormData) {
+  const session = await getSession()
+
+  if (!session || !session.organizationId || session.role !== "ADMIN") {
+    redirect("/login")
+  }
+
   const categorias = formData.getAll("categorias")
 
   if (categorias.length === 0) {
@@ -162,10 +168,12 @@ export async function generateInviteLink(formData: FormData) {
   expiresAt.setDate(expiresAt.getDate() + 7) // Expira em 7 dias
 
   // Salva as categorias no token (pode ser melhorado com uma tabela separada)
+
   await prisma.managerInvite.create({
     data: {
       token,
       expiresAt,
+      organizationId: session.organizationId,
       // Por enquanto, vamos salvar as categorias em uma string separada por vírgula
       // ou criar uma tabela ManagerInviteCategory
     },

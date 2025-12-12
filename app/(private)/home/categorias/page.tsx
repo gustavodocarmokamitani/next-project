@@ -7,7 +7,7 @@ import { BackButton } from "@/app/components/back-button"
 import { AlertMessage } from "@/app/components/alert-message"
 import { CategoriaCard } from "./categoria-card"
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, Globe, Layers } from "lucide-react"
 
 export default async function CategoriasPage() {
   const session = await getSession()
@@ -16,7 +16,16 @@ export default async function CategoriasPage() {
     redirect("/login")
   }
 
+  // Se for SYSTEM, redireciona para a página de categorias globais do sistema
+  if (session.role === "SYSTEM") {
+    redirect("/home/sistema/categorias")
+  }
+
   const categorias = await getCategorias()
+
+  // Separa categorias globais e custom
+  const categoriasGlobais = categorias.filter((cat) => cat.isGlobal === true)
+  const categoriasCustom = categorias.filter((cat) => cat.isGlobal !== true)
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -65,8 +74,48 @@ export default async function CategoriasPage() {
         </div>
       </div>
 
-      {/* Categories List */}
-      {categorias.length === 0 ? (
+      {/* Categorias Globais */}
+      {categoriasGlobais.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Globe className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold text-foreground">
+              Categorias Globais
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Categorias globais disponibilizadas pelo sistema. Você pode utilizá-las, mas não pode editá-las ou removê-las.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categoriasGlobais.map((categoria) => (
+              <CategoriaCard key={categoria.id} categoria={categoria} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Categorias Custom */}
+      {categoriasCustom.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Layers className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold text-foreground">
+              Categorias Custom
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Categorias criadas especificamente para sua organização. Você pode editá-las e removê-las.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categoriasCustom.map((categoria) => (
+              <CategoriaCard key={categoria.id} categoria={categoria} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mensagem quando não há categorias */}
+      {categorias.length === 0 && (
         <div className="rounded-lg border border-border bg-card p-8 text-center">
           <p className="text-muted-foreground mb-4">
             Nenhuma categoria cadastrada ainda.
@@ -77,12 +126,6 @@ export default async function CategoriasPage() {
               Adicionar Primeira Categoria
             </Link>
           </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categorias.map((categoria) => (
-            <CategoriaCard key={categoria.id} categoria={categoria} />
-          ))}
         </div>
       )}
     </div>

@@ -64,7 +64,7 @@ export async function getConvitesPendentes(): Promise<ConvitePendenteDTO[]> {
   )
 
   return convitesNaoAceitos
-    .filter((c): c is any => c !== null)
+    .filter((c): c is any => c !== null && c.championship?.organizer !== null)
     .map((convite: any) => ({
       id: convite.id,
       championshipId: convite.championshipId,
@@ -73,7 +73,7 @@ export async function getConvitesPendentes(): Promise<ConvitePendenteDTO[]> {
       championshipStartDate: convite.championship.startDate,
       championshipEndDate: convite.championship.endDate,
       championshipLocation: convite.championship.location,
-      organizerName: convite.championship.organizer.name,
+      organizerName: convite.championship.organizer?.name || "Organizador não encontrado",
       token: convite.token,
       expiresAt: convite.expiresAt,
       createdAt: convite.createdAt,

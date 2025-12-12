@@ -66,12 +66,12 @@ async function main() {
     console.log('⏭️  User Sistema já existe')
   }
 
-  // 3. Cria categorias padrão
+  // 3. Cria categorias globais (organizationId: null)
   for (const nomeCategoria of categoriasPadrao) {
     const categoriaExistente = await prisma.category.findFirst({
       where: {
         name: nomeCategoria,
-        organizationId: organizacaoSistema.id
+        organizationId: null // Categorias globais
       }
     })
 
@@ -79,12 +79,12 @@ async function main() {
       await prisma.category.create({
         data: {
           name: nomeCategoria,
-          organizationId: organizacaoSistema.id
+          organizationId: null // Categoria global
         }
       })
-      console.log(`✅ Categoria "${nomeCategoria}" criada`)
+      console.log(`✅ Categoria global "${nomeCategoria}" criada`)
     } else {
-      console.log(`⏭️  Categoria "${nomeCategoria}" já existe`)
+      console.log(`⏭️  Categoria global "${nomeCategoria}" já existe`)
     }
   }
 

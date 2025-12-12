@@ -235,7 +235,7 @@ export default async function OrganizacaoDetalhesPage({
                         {manager.firstName} {manager.lastName}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {manager.phone || manager.email || "Sem contato"}
+                        {manager.phone || "Sem contato"}
                       </p>
                       {manager.categories.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
@@ -276,7 +276,7 @@ export default async function OrganizacaoDetalhesPage({
                         {athlete.firstName} {athlete.lastName}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {athlete.phone || athlete.email || "Sem contato"}
+                        {athlete.phone || "Sem contato"}
                       </p>
                       {athlete.categories.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">

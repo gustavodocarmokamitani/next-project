@@ -31,10 +31,10 @@ export function CampeonatoCategoriaEditForm({
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tipoCategoria, setTipoCategoria] = useState<"global" | "custom">(
-    categoria.categoriaGlobalId ? "global" : "custom",
+    categoria.categoryId ? "global" : "custom",
   )
   const [categoriaGlobalId, setCategoriaGlobalId] = useState<string>(
-    categoria.categoriaGlobalId || "",
+    categoria.categoryId || "",
   )
 
   return (

@@ -5,10 +5,10 @@ import { getSession } from "@/lib/get-session"
 export type CampeonatoCategoriaDTO = {
   id: string
   nome: string
-  categoriaGlobalId: string | null
-  categoriaGlobalNome: string | null
+  categoryId: string | null // null = categoria custom, string = referência a Category (global ou org)
   allowUpgrade: boolean
   createdAt: Date
+  tipo: "global" | "organizacao" | "custom" // Tipo da categoria
 }
 
 export async function getCampeonatoCategorias(
@@ -56,14 +56,23 @@ export async function getCampeonatoCategorias(
     },
   })
 
-  return categorias.map((cat: any) => ({
-    id: cat.id,
-    nome: cat.name,
-    categoriaGlobalId: cat.categoryId,
-    categoriaGlobalNome: cat.category?.name || null,
-    allowUpgrade: cat.allowUpgrade,
-    createdAt: cat.createdAt,
-  }))
+  return categorias.map((cat: any) => {
+    // Determina o tipo da categoria
+    let tipo: "global" | "organizacao" | "custom" = "custom"
+    if (cat.categoryId) {
+      // Se tem categoryId, verifica se é global (organizationId: null) ou organizacional
+      tipo = cat.category?.organizationId === null ? "global" : "organizacao"
+    }
+
+    return {
+      id: cat.id,
+      nome: cat.name,
+      categoryId: cat.categoryId,
+      allowUpgrade: cat.allowUpgrade,
+      createdAt: cat.createdAt,
+      tipo,
+    }
+  })
 }
 
 export async function getCampeonatoCategoriaById(
@@ -108,13 +117,19 @@ export async function getCampeonatoCategoriaById(
     return null
   }
 
+  // Determina o tipo da categoria
+  let tipo: "global" | "organizacao" | "custom" = "custom"
+  if (categoria.categoryId) {
+    tipo = categoria.category?.organizationId === null ? "global" : "organizacao"
+  }
+
   return {
     id: categoria.id,
     nome: categoria.name,
-    categoriaGlobalId: categoria.categoryId,
-    categoriaGlobalNome: categoria.category?.name || null,
+    categoryId: categoria.categoryId,
     allowUpgrade: categoria.allowUpgrade,
     createdAt: categoria.createdAt,
+    tipo,
   }
 }
 

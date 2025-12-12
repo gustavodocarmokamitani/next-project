@@ -40,7 +40,7 @@ export async function getAtletasParaInscricao(): Promise<AtletaInscricaoDTO[]> {
   // SYSTEM vê todos os atletas, ADMIN apenas da sua organização
   const whereClause = session.role === "SYSTEM"
     ? {}
-    : { organizationId: session.organizationId }
+    : { organizationId: session.organizationId! }
   
   const atletas = await prisma.athlete.findMany({
     where: whereClause,
@@ -90,7 +90,7 @@ export async function getCategoriasComInscricoes(
   // Verifica se a organização aceitou o convite (SYSTEM pode ver qualquer campeonato)
   const whereClause = session.role === "SYSTEM"
     ? { championshipId: campeonatoId, used: true }
-    : { championshipId: campeonatoId, organizationId: session.organizationId, used: true }
+    : { championshipId: campeonatoId, organizationId: session.organizationId!, used: true }
   
   const convite = await (prisma as any).championshipInvite.findFirst({
     where: whereClause,
@@ -105,7 +105,7 @@ export async function getCategoriasComInscricoes(
   // SYSTEM vê todas as entries, ADMIN apenas da sua organização
   const entriesWhereClause = session.role === "SYSTEM"
     ? {}
-    : { organizationId: session.organizationId }
+    : { organizationId: session.organizationId! }
   
   const categorias = await (prisma as any).championshipCategory.findMany({
     where: {

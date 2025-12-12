@@ -41,7 +41,7 @@ model User {
   manager             Manager?
   passwordResetTokens PasswordResetToken[]
   sessions            Session[]
-  organization        Organization?        @relation(fields: [organizationId], references: [id])
+  organization        Organization?        @relation(fields: [organizationId], references: [id], onDelete: SetNull)
 }
 
 model Session {
@@ -70,15 +70,16 @@ model Category {
   name                  String
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
-  organizationId        String
-  organization          Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId        String?              // null = Categoria Global (SYSTEM), string = Categoria da Organização
+  organization          Organization?         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   athletes              CategoryAthlete[]
   events                EventCategory[]
   managers              ManagerCategory[]
   payments              PaymentCategory[]
   championshipCategories ChampionshipCategory[]
 
-  @@unique([name, organizationId])
+  @@unique([name, organizationId]) // Permite mesmo nome em organizações diferentes, e null para globais
+  @@index([organizationId]) // Performance: buscar globais (null) vs organizacionais
 }
 
 model Manager {
@@ -187,7 +188,7 @@ model Payment {
   championshipId  String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  event           Event?            @relation(fields: [eventId], references: [id])
+  event           Event?            @relation(fields: [eventId], references: [id], onDelete: SetNull)
   championship    Championship?     @relation(fields: [championshipId], references: [id], onDelete: Cascade)
   categories      PaymentCategory[]
   items           PaymentItem[]

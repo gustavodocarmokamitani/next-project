@@ -49,13 +49,38 @@ export async function POST(req: Request) {
       )
     }
 
+    // Valida se o nome da organização foi fornecido
+    if (!organization || typeof organization !== "string" || organization.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Nome da organização é obrigatório." },
+        { status: 400 },
+      )
+    }
+
+    const organizationName = organization.trim()
+
+    // Verifica se já existe uma organização com este nome
+    let organizacao = await prisma.organization.findUnique({
+      where: { name: organizationName },
+    })
+
+    // Se não existir, cria uma nova organização
+    if (!organizacao) {
+      organizacao = await prisma.organization.create({
+        data: {
+          name: organizationName,
+        },
+      })
+    }
+
     const passwordHash = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({
       data: {
         email,
         password: passwordHash,
         name: name || null,
-        organizationName: organization && typeof organization === "string" ? organization.trim() : null,
+        organizationName: organizationName,
+        organizationId: organizacao.id, // Associa o usuário à organização
       },
       select: {
         id: true,

@@ -24,7 +24,7 @@ export async function inscreverAtleta(
   // Verifica se a organização aceitou o convite (SYSTEM pode acessar qualquer campeonato)
   const whereClause = session.role === "SYSTEM"
     ? { championshipId: campeonatoId, used: true }
-    : { championshipId: campeonatoId, organizationId: session.organizationId, used: true }
+    : { championshipId: campeonatoId, organizationId: session.organizationId!, used: true }
   
   const convite = await (prisma as any).championshipInvite.findFirst({
     where: whereClause,
@@ -40,11 +40,10 @@ export async function inscreverAtleta(
   // Verifica se o atleta pertence à organização (SYSTEM pode ver qualquer atleta)
   const athleteWhereClause = session.role === "SYSTEM"
     ? { id: athleteId }
-    : { id: athleteId, organizationId: session.organizationId }
+    : { id: athleteId, organizationId: session.organizationId! }
   
   const atleta = await prisma.athlete.findFirst({
     where: athleteWhereClause,
-    },
     select: { id: true },
   })
 
@@ -99,7 +98,7 @@ export async function inscreverAtleta(
   let entry = await (prisma as any).championshipEntry.findFirst({
     where: {
       championshipId: campeonatoId,
-      organizationId: session.organizationId,
+      organizationId: session.organizationId!,
       championshipCategoryId: categoriaId,
     },
   })
@@ -108,7 +107,7 @@ export async function inscreverAtleta(
     entry = await (prisma as any).championshipEntry.create({
       data: {
         championshipId: campeonatoId,
-        organizationId: session.organizationId,
+        organizationId: session.organizationId!,
         championshipCategoryId: categoriaId,
       },
     })
@@ -163,7 +162,7 @@ export async function removerInscricao(
   const entry = await (prisma as any).championshipEntry.findFirst({
     where: {
       championshipId: campeonatoId,
-      organizationId: session.organizationId,
+      organizationId: session.organizationId!,
       championshipCategoryId: categoriaId,
     },
   })
@@ -208,7 +207,7 @@ export async function confirmarInscricao(
   const entry = await (prisma as any).championshipEntry.findFirst({
     where: {
       championshipId: campeonatoId,
-      organizationId: session.organizationId,
+      organizationId: session.organizationId!,
       championshipCategoryId: categoriaId,
     },
   })

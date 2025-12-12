@@ -5,14 +5,21 @@ import { updateCampeonato } from "../../actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MultiSelect } from "@/components/ui/multi-select"
 import { DespesasEditForm, type DespesaItem } from "./despesas-edit-form"
+import { CategoriasEditForm } from "./categorias-edit-form"
 import { useRouter } from "next/navigation"
 import type { CampeonatoDTO } from "../../queries"
 
-type Categoria = {
+type CategoriaGlobal = {
   id: string
   nome: string
+  tipo: "global"
+}
+
+type CategoriaOrganizacao = {
+  id: string
+  nome: string
+  tipo: "organizacao"
 }
 
 type DespesaInicial = {
@@ -26,22 +33,34 @@ type DespesaInicial = {
 
 type CampeonatoEditFormProps = {
   campeonato: CampeonatoDTO
-  categorias: Categoria[]
-  categoriasSelecionadas: string[]
+  categoriasGlobais: CategoriaGlobal[]
+  categoriasOrganizacao: CategoriaOrganizacao[]
+  categoriasGlobaisSelecionadas: string[]
+  categoriasOrganizacaoSelecionadas: string[]
+  categoriasCustom: Array<{ id: string; nome: string; allowUpgrade: boolean }>
   despesasIniciais: DespesaInicial[]
 }
 
 export function CampeonatoEditForm({
   campeonato,
-  categorias,
-  categoriasSelecionadas: categoriasSelecionadasInicial,
+  categoriasGlobais,
+  categoriasOrganizacao,
+  categoriasGlobaisSelecionadas: globaisIniciais,
+  categoriasOrganizacaoSelecionadas: organizacaoIniciais,
+  categoriasCustom: customIniciais,
   despesasIniciais,
 }: CampeonatoEditFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<string[]>(
-    categoriasSelecionadasInicial,
-  )
+  const [categoriasState, setCategoriasState] = useState<{
+    globais: string[]
+    organizacao: string[]
+    custom: Array<{ id: string; nome: string; allowUpgrade: boolean; isNew?: boolean; isDeleted?: boolean; isEdited?: boolean }>
+  }>({
+    globais: globaisIniciais,
+    organizacao: organizacaoIniciais,
+    custom: customIniciais.map((c) => ({ ...c, isNew: false, isDeleted: false, isEdited: false })),
+  })
   const [despesas, setDespesas] = useState<DespesaItem[]>([])
 
   // Formata data para input datetime-local
@@ -59,9 +78,25 @@ export function CampeonatoEditForm({
     <form
       action={async (formData) => {
         // Adiciona as categorias ao FormData
-        categoriasSelecionadas.forEach((categoriaId) => {
+        // Categorias globais e organizacionais (com categoryId)
+        categoriasState.globais.forEach((categoriaId) => {
           formData.append("categorias", categoriaId)
         })
+        categoriasState.organizacao.forEach((categoriaId) => {
+          formData.append("categorias", categoriaId)
+        })
+        
+        // Categorias custom (existentes e novas)
+        categoriasState.custom
+          .filter((c) => !c.isDeleted)
+          .forEach((custom, index) => {
+            formData.append(`categoriasCustom[${index}][id]`, custom.id)
+            formData.append(`categoriasCustom[${index}][nome]`, custom.nome)
+            formData.append(`categoriasCustom[${index}][allowUpgrade]`, custom.allowUpgrade ? "true" : "false")
+            formData.append(`categoriasCustom[${index}][isNew]`, custom.isNew ? "true" : "false")
+            formData.append(`categoriasCustom[${index}][isDeleted]`, custom.isDeleted ? "true" : "false")
+            formData.append(`categoriasCustom[${index}][isEdited]`, custom.isEdited ? "true" : "false")
+          })
 
         // Adiciona as despesas ao FormData
         despesas.forEach((despesa, index) => {
@@ -152,17 +187,16 @@ export function CampeonatoEditForm({
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="categorias">Categorias que podem participar *</Label>
-          <MultiSelect
-            options={categorias}
-            selected={categoriasSelecionadas}
-            onChange={setCategoriasSelecionadas}
-            placeholder="Selecione as categorias..."
+        {/* Seção de Categorias */}
+        <div className="pt-4 border-t border-border">
+          <CategoriasEditForm
+            categoriasGlobais={categoriasGlobais}
+            categoriasOrganizacao={categoriasOrganizacao}
+            categoriasGlobaisSelecionadas={globaisIniciais}
+            categoriasOrganizacaoSelecionadas={organizacaoIniciais}
+            categoriasCustom={customIniciais}
+            onCategoriasChange={setCategoriasState}
           />
-          <p className="text-xs text-muted-foreground">
-            Selecione as categorias que poderão participar deste campeonato
-          </p>
         </div>
       </div>
 

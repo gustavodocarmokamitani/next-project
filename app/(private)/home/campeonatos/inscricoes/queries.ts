@@ -37,7 +37,7 @@ export async function getCampeonatosInscritos(): Promise<CampeonatoInscricaoDTO[
   // SYSTEM vê todos, ADMIN apenas da sua organização
   const whereClause = session.role === "SYSTEM"
     ? { used: true }
-    : { organizationId: session.organizationId, used: true }
+    : { organizationId: session.organizationId!, used: true }
   
   const convitesAceitos = await (prisma as any).championshipInvite.findMany({
     where: whereClause,
@@ -68,24 +68,26 @@ export async function getCampeonatosInscritos(): Promise<CampeonatoInscricaoDTO[
     },
   })
 
-  return convitesAceitos.map((convite: any) => ({
-    id: convite.championship.id,
-    nome: convite.championship.name,
-    descricao: convite.championship.description,
-    dataInicio: convite.championship.startDate,
-    dataFim: convite.championship.endDate,
-    local: convite.championship.location,
-    organizador: {
-      id: convite.championship.organizer.id,
-      nome: convite.championship.organizer.name,
-    },
-    categorias: convite.championship.categories.map((cat: any) => ({
-      id: cat.id,
-      nome: cat.name,
-      allowUpgrade: cat.allowUpgrade,
-    })),
-    createdAt: convite.championship.createdAt,
-  }))
+  return convitesAceitos
+    .filter((convite: any) => convite.championship?.organizer !== null)
+    .map((convite: any) => ({
+      id: convite.championship.id,
+      nome: convite.championship.name,
+      descricao: convite.championship.description,
+      dataInicio: convite.championship.startDate,
+      dataFim: convite.championship.endDate,
+      local: convite.championship.location,
+      organizador: {
+        id: convite.championship.organizer.id,
+        nome: convite.championship.organizer.name,
+      },
+      categorias: convite.championship.categories?.map((cat: any) => ({
+        id: cat.id,
+        nome: cat.name,
+        allowUpgrade: cat.allowUpgrade,
+      })) || [],
+      createdAt: convite.championship.createdAt,
+    }))
 }
 
 export async function getCampeonatoInscricaoById(
@@ -106,7 +108,7 @@ export async function getCampeonatoInscricaoById(
   // SYSTEM pode ver qualquer campeonato, ADMIN apenas os que aceitou convite
   const whereClause = session.role === "SYSTEM"
     ? { championshipId: campeonatoId, used: true }
-    : { championshipId: campeonatoId, organizationId: session.organizationId, used: true }
+    : { championshipId: campeonatoId, organizationId: session.organizationId!, used: true }
   
   const convite = await (prisma as any).championshipInvite.findFirst({
     where: whereClause,
@@ -134,7 +136,7 @@ export async function getCampeonatoInscricaoById(
     },
   })
 
-  if (!convite) {
+  if (!convite || !convite.championship?.organizer) {
     return null
   }
 
@@ -149,11 +151,11 @@ export async function getCampeonatoInscricaoById(
       id: convite.championship.organizer.id,
       nome: convite.championship.organizer.name,
     },
-    categorias: convite.championship.categories.map((cat: any) => ({
+    categorias: convite.championship.categories?.map((cat: any) => ({
       id: cat.id,
       nome: cat.name,
       allowUpgrade: cat.allowUpgrade,
-    })),
+    })) || [],
     createdAt: convite.championship.createdAt,
   }
 }

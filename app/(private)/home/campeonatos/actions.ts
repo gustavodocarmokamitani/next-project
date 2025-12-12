@@ -87,7 +87,7 @@ export async function createCampeonato(formData: FormData) {
     index++
   }
 
-  // Processa as categorias do FormData
+  // Processa as categorias do FormData (globais + organizacionais)
   const categoriasIds: string[] = []
   const categoriasFormData = formData.getAll("categorias")
   categoriasFormData.forEach((catId) => {
@@ -96,25 +96,45 @@ export async function createCampeonato(formData: FormData) {
     }
   })
 
-  if (categoriasIds.length === 0) {
-    redirect("/home/campeonatos/adicionar?error=Selecione pelo menos uma categoria.")
+  // Processa as categorias custom
+  const categoriasCustom: Array<{ nome: string; allowUpgrade: boolean }> = []
+  let customIndex = 0
+  while (formData.get(`categoriasCustom[${customIndex}][nome]`)) {
+    const nome = formData.get(`categoriasCustom[${customIndex}][nome]`)
+    const allowUpgrade = formData.get(`categoriasCustom[${customIndex}][allowUpgrade]`) === "true"
+
+    if (nome && typeof nome === "string" && nome.trim().length > 0) {
+      categoriasCustom.push({
+        nome: nome.trim(),
+        allowUpgrade,
+      })
+    }
+    customIndex++
   }
 
-  // Verifica se todas as categorias existem
-  const categoriasExistentes = await prisma.category.findMany({
-    where: {
-      id: {
-        in: categoriasIds,
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-  })
+  // Valida que há pelo menos uma categoria (existente ou custom)
+  if (categoriasIds.length === 0 && categoriasCustom.length === 0) {
+    redirect("/home/campeonatos/adicionar?error=Selecione ou crie pelo menos uma categoria.")
+  }
 
-  if (categoriasExistentes.length !== categoriasIds.length) {
-    redirect("/home/campeonatos/adicionar?error=Uma ou mais categorias selecionadas não foram encontradas.")
+  // Verifica se todas as categorias existentes (globais/org) existem
+  let categoriasExistentes: Array<{ id: string; name: string }> = []
+  if (categoriasIds.length > 0) {
+    categoriasExistentes = await prisma.category.findMany({
+      where: {
+        id: {
+          in: categoriasIds,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    })
+
+    if (categoriasExistentes.length !== categoriasIds.length) {
+      redirect("/home/campeonatos/adicionar?error=Uma ou mais categorias selecionadas não foram encontradas.")
+    }
   }
 
   // Cria o campeonato, categorias e despesas em uma transação
@@ -131,14 +151,26 @@ export async function createCampeonato(formData: FormData) {
       },
     })
 
-    // Cria as categorias do campeonato
+    // Cria as categorias do campeonato (existentes: globais + organizacionais)
     for (const categoria of categoriasExistentes) {
       await (tx as any).championshipCategory.create({
         data: {
           championshipId: campeonato.id,
-          categoryId: categoria.id,
+          categoryId: categoria.id, // Referência à Category existente
           name: categoria.name,
           allowUpgrade: false, // Por padrão, não permite upgrade
+        },
+      })
+    }
+
+    // Cria as categorias custom do campeonato
+    for (const custom of categoriasCustom) {
+      await (tx as any).championshipCategory.create({
+        data: {
+          championshipId: campeonato.id,
+          categoryId: null, // Categoria custom não tem referência
+          name: custom.nome,
+          allowUpgrade: custom.allowUpgrade,
         },
       })
     }
@@ -229,7 +261,7 @@ export async function updateCampeonato(formData: FormData) {
     redirect(`/home/campeonatos/editar/${id}?error=Data de fim deve ser posterior à data de início.`)
   }
 
-  // Processa as categorias do FormData
+  // Processa as categorias do FormData (globais + organizacionais)
   const categoriasIds: string[] = []
   const categoriasFormData = formData.getAll("categorias")
   categoriasFormData.forEach((catId) => {
@@ -238,25 +270,61 @@ export async function updateCampeonato(formData: FormData) {
     }
   })
 
-  if (categoriasIds.length === 0) {
-    redirect(`/home/campeonatos/editar/${id}?error=Selecione pelo menos uma categoria.`)
+  // Processa as categorias custom
+  const categoriasCustom: Array<{
+    id: string
+    nome: string
+    allowUpgrade: boolean
+    isNew: boolean
+    isDeleted: boolean
+    isEdited: boolean
+  }> = []
+  let customIndex = 0
+  while (formData.get(`categoriasCustom[${customIndex}][nome]`)) {
+    const customId = formData.get(`categoriasCustom[${customIndex}][id]`)
+    const customNome = formData.get(`categoriasCustom[${customIndex}][nome]`)
+    const allowUpgrade = formData.get(`categoriasCustom[${customIndex}][allowUpgrade]`) === "true"
+    const isNew = formData.get(`categoriasCustom[${customIndex}][isNew]`) === "true"
+    const isDeleted = formData.get(`categoriasCustom[${customIndex}][isDeleted]`) === "true"
+    const isEdited = formData.get(`categoriasCustom[${customIndex}][isEdited]`) === "true"
+
+    if (customId && typeof customId === "string" && customNome && typeof customNome === "string") {
+      categoriasCustom.push({
+        id: customId.trim(),
+        nome: customNome.trim(),
+        allowUpgrade,
+        isNew,
+        isDeleted,
+        isEdited,
+      })
+    }
+    customIndex++
   }
 
-  // Verifica se todas as categorias existem
-  const categoriasExistentes = await prisma.category.findMany({
-    where: {
-      id: {
-        in: categoriasIds,
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-  })
+  // Valida que há pelo menos uma categoria (existente ou custom não deletada)
+  const categoriasCustomAtivas = categoriasCustom.filter((c) => !c.isDeleted)
+  if (categoriasIds.length === 0 && categoriasCustomAtivas.length === 0) {
+    redirect(`/home/campeonatos/editar/${id}?error=Selecione ou crie pelo menos uma categoria.`)
+  }
 
-  if (categoriasExistentes.length !== categoriasIds.length) {
-    redirect(`/home/campeonatos/editar/${id}?error=Uma ou mais categorias selecionadas não foram encontradas.`)
+  // Verifica se todas as categorias existentes (globais/org) existem
+  let categoriasExistentes: Array<{ id: string; name: string }> = []
+  if (categoriasIds.length > 0) {
+    categoriasExistentes = await prisma.category.findMany({
+      where: {
+        id: {
+          in: categoriasIds,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    })
+
+    if (categoriasExistentes.length !== categoriasIds.length) {
+      redirect(`/home/campeonatos/editar/${id}?error=Uma ou mais categorias selecionadas não foram encontradas.`)
+    }
   }
 
   // Processa as despesas do FormData
@@ -321,13 +389,10 @@ export async function updateCampeonato(formData: FormData) {
       },
     })
 
-    // Busca as categorias atuais do campeonato (apenas as que têm categoryId - categorias globais)
+    // Busca todas as categorias atuais do campeonato
     const categoriasAtuais = await (tx as any).championshipCategory.findMany({
       where: {
         championshipId: id,
-        categoryId: {
-          not: null,
-        },
       },
       select: {
         id: true,
@@ -335,15 +400,20 @@ export async function updateCampeonato(formData: FormData) {
       },
     })
 
-    const categoriasAtuaisIds = categoriasAtuais
-      .map((cat: any) => cat.categoryId)
-      .filter((id: string | null) => id !== null) as string[]
+    // Separa categorias com categoryId (globais/org) e custom (categoryId: null)
+    const categoriasAtuaisComCategoryId = categoriasAtuais
+      .filter((cat: any) => cat.categoryId !== null)
+      .map((cat: any) => cat.categoryId) as string[]
+    
+    const categoriasCustomAtuaisIds = categoriasAtuais
+      .filter((cat: any) => cat.categoryId === null)
+      .map((cat: any) => cat.id) as string[]
 
-    // Identifica categorias para adicionar e remover
+    // Gerencia categorias com categoryId (globais/org)
     const categoriasParaAdicionar = categoriasIds.filter(
-      (catId) => !categoriasAtuaisIds.includes(catId),
+      (catId) => !categoriasAtuaisComCategoryId.includes(catId),
     )
-    const categoriasParaRemover = categoriasAtuaisIds.filter(
+    const categoriasParaRemover = categoriasAtuaisComCategoryId.filter(
       (catId) => !categoriasIds.includes(catId),
     )
 
@@ -359,7 +429,7 @@ export async function updateCampeonato(formData: FormData) {
       })
     }
 
-    // Adiciona novas categorias
+    // Adiciona novas categorias (globais/org)
     for (const categoria of categoriasExistentes) {
       if (categoriasParaAdicionar.includes(categoria.id)) {
         await (tx as any).championshipCategory.create({
@@ -368,6 +438,35 @@ export async function updateCampeonato(formData: FormData) {
             categoryId: categoria.id,
             name: categoria.name,
             allowUpgrade: false,
+          },
+        })
+      }
+    }
+
+    // Gerencia categorias custom
+    for (const custom of categoriasCustom) {
+      if (custom.isDeleted) {
+        // Remove categoria custom
+        await (tx as any).championshipCategory.delete({
+          where: { id: custom.id },
+        })
+      } else if (custom.isNew) {
+        // Cria nova categoria custom
+        await (tx as any).championshipCategory.create({
+          data: {
+            championshipId: id,
+            categoryId: null,
+            name: custom.nome,
+            allowUpgrade: custom.allowUpgrade,
+          },
+        })
+      } else if (custom.isEdited) {
+        // Atualiza categoria custom existente
+        await (tx as any).championshipCategory.update({
+          where: { id: custom.id },
+          data: {
+            name: custom.nome,
+            allowUpgrade: custom.allowUpgrade,
           },
         })
       }

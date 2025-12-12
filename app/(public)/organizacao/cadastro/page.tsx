@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Building2, Phone, Lock, User, Mail, AlertCircle } from "lucide-react"
 
-export default function OrganizacaoCadastroPage() {
+function OrganizacaoCadastroForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const inviteToken = searchParams.get("token") // Token do convite de campeonato (opcional)
@@ -208,6 +208,25 @@ export default function OrganizacaoCadastroPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function OrganizacaoCadastroPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="max-w-md w-full rounded-lg border border-border bg-card p-8 space-y-6">
+          <div className="text-center">
+            <Building2 className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Carregando...
+            </h1>
+          </div>
+        </div>
+      </div>
+    }>
+      <OrganizacaoCadastroForm />
+    </Suspense>
   )
 }
 

@@ -33,6 +33,11 @@ export default async function EditarCategoriaPage({
     notFound()
   }
 
+  // Não permite editar categorias globais (apenas SYSTEM pode)
+  if (categoria.isGlobal && session.role !== "SYSTEM") {
+    redirect("/home/categorias?error=Não é possível editar categorias globais. Apenas o administrador do sistema pode editá-las.")
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <Suspense fallback={null}>

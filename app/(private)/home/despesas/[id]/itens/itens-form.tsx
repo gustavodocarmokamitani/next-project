@@ -14,6 +14,7 @@ type ItensFormProps = {
 export function ItensForm({ despesaId }: ItensFormProps) {
   const [quantityEnabled, setQuantityEnabled] = useState(false)
   const [required, setRequired] = useState(false)
+  const [isFixed, setIsFixed] = useState(false)
 
   return (
     <form action={addItemToDespesa} className="space-y-6">

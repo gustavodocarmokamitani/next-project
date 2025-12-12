@@ -131,6 +131,7 @@ export async function POST(req: Request) {
         birthDate: birthDateObj,
         shirtNumber: shirtNumber || null,
         userId: user.id,
+        organizationId: invite.organizationId,
         categories: {
           create: categorias.map((catId: string) => ({
             categoryId: catId,

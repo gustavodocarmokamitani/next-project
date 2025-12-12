@@ -28,12 +28,11 @@ export function CampeonatoCategoriaCard({
             <h3 className="text-xl font-semibold text-foreground">
               {categoria.nome}
             </h3>
-            {categoria.categoriaGlobalNome && (
+            {categoria.categoryId ? (
               <p className="text-sm text-muted-foreground mt-1">
-                Baseada em: {categoria.categoriaGlobalNome}
+                Categoria baseada em categoria existente
               </p>
-            )}
-            {!categoria.categoriaGlobalNome && (
+            ) : (
               <p className="text-sm text-muted-foreground mt-1">
                 Categoria custom
               </p>

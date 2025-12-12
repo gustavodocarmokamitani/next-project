@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { authApi } from "@/lib/auth-api"
 import { LogIn, Mail, Lock, Phone } from "lucide-react"
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [emailOrPhone, setEmailOrPhone] = useState("")
@@ -134,6 +134,27 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center px-4 py-20">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 animate-pulse">
+              <LogIn className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Carregando...
+            </h1>
+          </div>
+        </div>
+      </main>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
 

@@ -14,10 +14,10 @@ export default async function SistemaPage() {
   }
 
   // Busca estatísticas gerais do sistema
-  const [totalOrganizacoes, totalCampeonatos, totalCategorias, totalUsuarios] = await Promise.all([
+  const [totalOrganizacoes, totalCampeonatos, totalCategoriasGlobais, totalUsuarios] = await Promise.all([
     prisma.organization.count(),
     (prisma as any).championship.count(),
-    prisma.category.count(),
+    prisma.category.count({ where: { organizationId: null } }),
     prisma.user.count(),
   ])
 
@@ -66,7 +66,7 @@ export default async function SistemaPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Categorias Globais</p>
-              <p className="text-2xl font-bold">{totalCategorias}</p>
+              <p className="text-2xl font-bold">{totalCategoriasGlobais}</p>
             </div>
             <Layers className="h-8 w-8 text-primary" />
           </div>

@@ -115,6 +115,7 @@ export async function POST(req: Request) {
         lastName,
         phone,
         userId: user.id,
+        organizationId: invite.organizationId,
         categories: {
           create: categorias.map((catId: string) => ({
             categoryId: catId,

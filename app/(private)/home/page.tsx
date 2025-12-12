@@ -16,6 +16,8 @@ import {
   Layers,
   UserCog,
   ChartBar,
+  Medal,
+  ClipboardList,
 } from "lucide-react";
 import { getHomeStats } from "./queries";
 
@@ -59,7 +61,7 @@ export default async function HomePage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Button
             asChild
             variant="outline"
@@ -118,6 +120,26 @@ export default async function HomePage() {
             <Link href="/home/despesas">
               <CircleDollarSign className="h-6 w-6" />
               <span>Criar Pagamentos</span>
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="h-auto flex-col gap-2 py-6"
+          >
+            <Link href="/home/campeonatos">
+              <Medal className="h-6 w-6" />
+              <span>Campeonatos</span>
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="h-auto flex-col gap-2 py-6"
+          >
+            <Link href="/home/campeonatos/inscricoes">
+              <ClipboardList className="h-6 w-6" />
+              <span>Inscrições</span>
             </Link>
           </Button>
         </div>

@@ -78,6 +78,11 @@ export async function createAtletaGerente(formData: FormData) {
     },
   })
 
+  // Busca o organizationId do gerente
+  if (!session.organizationId) {
+    redirect("/gerente/atletas/adicionar?error=Organização não encontrada.")
+  }
+
   // Cria o atleta
   await prisma.athlete.create({
     data: {
@@ -90,6 +95,7 @@ export async function createAtletaGerente(formData: FormData) {
       birthDate: birthDateObj,
       shirtNumber: shirtNumber && typeof shirtNumber === "string" ? shirtNumber.trim() : null,
       userId: user.id,
+      organizationId: session.organizationId,
       categories: {
         create: categoriasSelecionadas.map((catId) => ({
           categoryId: catId,
@@ -286,6 +292,11 @@ export async function generateAtletaInviteLinkGerente(formData: FormData) {
     )
   }
 
+  // Busca o organizationId do gerente
+  if (!session.organizationId) {
+    redirect("/gerente/atletas/adicionar?error=Organização não encontrada.&tab=convite")
+  }
+
   const token = randomUUID()
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 7) // Expira em 7 dias
@@ -294,6 +305,7 @@ export async function generateAtletaInviteLinkGerente(formData: FormData) {
     data: {
       token,
       expiresAt,
+      organizationId: session.organizationId,
     },
   })
 
