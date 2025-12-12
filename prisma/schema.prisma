@@ -7,20 +7,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Organization {
+  id                      String                @id @default(uuid())
+  name                    String                @unique
+  stripeAccountId         String?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  athletes                Athlete[]
+  athleteInvites          AthleteInvite[]
+  categories              Category[]
+  events                  Event[]
+  managers                Manager[]
+  managerInvites          ManagerInvite[]
+  admin                   User[]
+  organizedChampionships  Championship[]        @relation("ChampionshipOrganizer")
+  championshipEntries     ChampionshipEntry[]    @relation("ChampionshipEntries")
+  championshipInvites     ChampionshipInvite[]   @relation("ChampionshipInvites")
+}
+
 model User {
-  id             String    @id @default(uuid())
-  name           String?
-  email          String?   @unique
-  phone          String?   @unique
-  password       String
-  emailVerified  Boolean   @default(false)
-  teamName       String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  sessions            Session[]
-  passwordResetTokens PasswordResetToken[]
-  manager             Manager?
+  id                  String               @id @default(uuid())
+  name                String?
+  email               String?              @unique
+  password            String
+  emailVerified       Boolean              @default(false)
+  role                String?              @default("ADMIN") // "SYSTEM", "ADMIN", etc
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  phone               String?              @unique
+  organizationName    String?
+  organizationId      String?
   athlete             Athlete?
+  manager             Manager?
+  passwordResetTokens PasswordResetToken[]
+  sessions            Session[]
+  organization        Organization?        @relation(fields: [organizationId], references: [id])
 }
 
 model Session {
@@ -36,7 +57,7 @@ model Session {
 model PasswordResetToken {
   id        String   @id @default(uuid())
   token     String   @unique
-  code      String   // Código de 6 dígitos
+  code      String
   userId    String
   expiresAt DateTime
   used      Boolean  @default(false)
@@ -45,43 +66,52 @@ model PasswordResetToken {
 }
 
 model Category {
-  id        String            @id @default(uuid())
-  name      String            @unique
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  managers  ManagerCategory[]
-  athletes  CategoryAthlete[]
-  events    EventCategory[]
-  payments  PaymentCategory[]
+  id                    String                @id @default(uuid())
+  name                  String
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  organizationId        String
+  organization          Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  athletes              CategoryAthlete[]
+  events                EventCategory[]
+  managers              ManagerCategory[]
+  payments              PaymentCategory[]
+  championshipCategories ChampionshipCategory[]
+
+  @@unique([name, organizationId])
 }
 
 model Manager {
-  id         String            @id @default(uuid())
-  firstName  String
-  lastName   String
-  phone      String            @unique
-  userId     String            @unique
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categories ManagerCategory[]
+  id             String            @id @default(uuid())
+  firstName      String
+  lastName       String
+  phone          String            @unique
+  userId         String            @unique
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories     ManagerCategory[]
 }
 
 model ManagerCategory {
   managerId  String
   categoryId String
-  manager    Manager  @relation(fields: [managerId], references: [id], onDelete: Cascade)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  manager    Manager  @relation(fields: [managerId], references: [id], onDelete: Cascade)
 
   @@id([managerId, categoryId])
 }
 
 model ManagerInvite {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  used      Boolean  @default(false)
+  id             String       @id @default(uuid())
+  token          String       @unique
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  used           Boolean      @default(false)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 model Athlete {
@@ -96,9 +126,12 @@ model Athlete {
   confederationId String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   categories      CategoryAthlete[]
   attendances     EventAttendance[]
+  championshipEntries ChampionshipAthleteEntry[]
 }
 
 model CategoryAthlete {
@@ -111,82 +144,89 @@ model CategoryAthlete {
 }
 
 model AthleteInvite {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  used      Boolean  @default(false)
+  id             String       @id @default(uuid())
+  token          String       @unique
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  used           Boolean      @default(false)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 model Event {
-  id          String          @id @default(uuid())
-  name        String
-  date        DateTime
-  location    String?
-  type        String          // Treinamento, Campeonato, Outros
-  description String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  categories  EventCategory[]
-  payments    Payment[]
-  attendances EventAttendance[]
+  id             String            @id @default(uuid())
+  name           String
+  date           DateTime
+  location       String?
+  type           String
+  description    String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  attendances    EventAttendance[]
+  categories     EventCategory[]
+  payments       Payment[]
 }
 
 model EventCategory {
   eventId    String
   categoryId String
-  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@id([eventId, categoryId])
 }
 
 model Payment {
-  id         String            @id @default(uuid())
-  name       String
-  dueDate    DateTime
-  isFinalized Boolean          @default(false)
-  eventId    String?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  event      Event?            @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  categories PaymentCategory[]
-  items      PaymentItem[]
+  id              String            @id @default(uuid())
+  name            String
+  dueDate         DateTime
+  isFinalized     Boolean           @default(false)
+  eventId         String?
+  championshipId  String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  event           Event?            @relation(fields: [eventId], references: [id])
+  championship    Championship?     @relation(fields: [championshipId], references: [id], onDelete: Cascade)
+  categories      PaymentCategory[]
+  items           PaymentItem[]
 }
 
 model PaymentCategory {
   paymentId  String
   categoryId String
-  payment    Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  payment    Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
   @@id([paymentId, categoryId])
 }
 
 model PaymentItem {
-  id             String  @id @default(uuid())
-  name           String
-  value          Float
-  quantityEnabled Boolean @default(false)
-  required       Boolean @default(false)
-  paymentId      String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  payment        Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  id              String               @id @default(uuid())
+  name            String
+  value           Float
+  quantityEnabled Boolean              @default(false)
+  paymentId       String
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  required        Boolean              @default(false)
+  isFixed         Boolean              @default(false) // Despesa fixa (não exibida para atletas, apenas para organizações)
   athletePayments AthletePaymentItem[]
+  payment         Payment              @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 }
 
 model EventAttendance {
-  id              String               @id @default(uuid())
-  eventId         String
-  athleteId       String
-  confirmed       Boolean              @default(false)
-  confirmedAt     DateTime?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  event           Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  athlete         Athlete              @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  paymentItems    AthletePaymentItem[]
+  id           String               @id @default(uuid())
+  eventId      String
+  athleteId    String
+  confirmed    Boolean              @default(false)
+  confirmedAt  DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  paymentItems AthletePaymentItem[]
+  athlete      Athlete              @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  event        Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, athleteId])
 }
@@ -195,15 +235,90 @@ model AthletePaymentItem {
   id                String          @id @default(uuid())
   attendanceId      String
   paymentItemId     String
-  confirmedQuantity Int             @default(0)  // Quantidade confirmada na presença
-  paidQuantity      Int             @default(0)  // Quantidade realmente paga/consumida
   paid              Boolean         @default(false)
   paidAt            DateTime?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+  confirmedQuantity Int             @default(0)
+  paidQuantity      Int             @default(0)
   attendance        EventAttendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
   paymentItem       PaymentItem     @relation(fields: [paymentItemId], references: [id], onDelete: Cascade)
 
   @@unique([attendanceId, paymentItemId])
 }
 
+model Championship {
+  id              String                @id @default(uuid())
+  name            String
+  description     String?
+  startDate       DateTime
+  endDate         DateTime?
+  location        String?
+  organizerId     String                // Organization que organiza o campeonato
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  organizer       Organization          @relation("ChampionshipOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+  categories      ChampionshipCategory[]
+  entries         ChampionshipEntry[]
+  invites         ChampionshipInvite[]
+  payments        Payment[]
+}
+
+model ChampionshipCategory {
+  id            String       @id @default(uuid())
+  championshipId String
+  categoryId    String?      // Pode ser uma categoria global ou null (categoria custom)
+  name          String       // Nome da categoria (se custom, usa este; se global, usa o nome da Category)
+  allowUpgrade  Boolean      @default(false) // Permite atletas de categorias menores participarem
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  championship  Championship @relation(fields: [championshipId], references: [id], onDelete: Cascade)
+  category      Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  entries       ChampionshipEntry[]
+}
+
+model ChampionshipEntry {
+  id                    String                @id @default(uuid())
+  championshipId        String
+  organizationId        String                // Organização que está inscrita
+  championshipCategoryId String
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  championship          Championship          @relation(fields: [championshipId], references: [id], onDelete: Cascade)
+  organization          Organization          @relation("ChampionshipEntries", fields: [organizationId], references: [id], onDelete: Cascade)
+  championshipCategory  ChampionshipCategory  @relation(fields: [championshipCategoryId], references: [id], onDelete: Cascade)
+  athleteEntries        ChampionshipAthleteEntry[]
+
+  @@unique([championshipId, organizationId, championshipCategoryId])
+}
+
+model ChampionshipAthleteEntry {
+  id                String            @id @default(uuid())
+  entryId           String
+  athleteId         String
+  confirmed         Boolean           @default(false)
+  confirmedAt       DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  entry             ChampionshipEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  athlete           Athlete           @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, athleteId])
+}
+
+model ChampionshipInvite {
+  id              String       @id @default(uuid())
+  championshipId  String
+  organizationId  String?      // Organização convidada (opcional - null = convite público)
+  token           String       // Token do convite (pode ser repetido para múltiplas organizações)
+  expiresAt       DateTime
+  used            Boolean      @default(false)
+  usedAt          DateTime?
+  createdAt       DateTime     @default(now())
+  championship    Championship @relation(fields: [championshipId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation("ChampionshipInvites", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Uma organização não pode aceitar o mesmo convite duas vezes
+  @@unique([championshipId, organizationId])
+  @@index([token])
+}

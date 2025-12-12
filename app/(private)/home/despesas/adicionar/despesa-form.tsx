@@ -39,12 +39,12 @@ export function DespesaForm({ categorias, eventos }: DespesaFormProps) {
     <form action={createDespesa} className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-foreground mb-4">
-          Dados da Despesa
+          Dados do Pagamento
         </h2>
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="nome">Nome da Despesa *</Label>
+          <Label htmlFor="nome">Nome do Pagamento *</Label>
           <Input id="nome" name="nome" required />
         </div>
 

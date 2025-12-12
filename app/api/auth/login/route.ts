@@ -90,8 +90,10 @@ export async function POST(req: Request) {
     const session = await createSession(user.id)
 
     // Determina o tipo de usuário
-    let role: "ADMIN" | "GERENTE" | "ATLETA" = "ADMIN"
-    if (user.manager) {
+    let role: "SYSTEM" | "ADMIN" | "GERENTE" | "ATLETA" = "ADMIN"
+    if (user.role === "SYSTEM") {
+      role = "SYSTEM"
+    } else if (user.manager) {
       role = "GERENTE"
     } else if (user.athlete) {
       role = "ATLETA"
@@ -99,7 +101,9 @@ export async function POST(req: Request) {
 
     // Determina redirecionamento baseado no role
     let redirectPath = "/home"
-    if (role === "GERENTE") {
+    if (role === "SYSTEM") {
+      redirectPath = "/home/sistema"
+    } else if (role === "GERENTE") {
       redirectPath = "/gerente"
     } else if (role === "ATLETA") {
       redirectPath = "/atleta"

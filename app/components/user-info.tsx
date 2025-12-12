@@ -13,7 +13,10 @@ export async function UserInfo() {
   let Icon = Users;
   let roleLabel = "Atleta";
   
-  if (session.role === "ADMIN") {
+  if (session.role === "SYSTEM") {
+    Icon = UserCog;
+    roleLabel = "Sistema";
+  } else if (session.role === "ADMIN") {
     Icon = UserCog;
     roleLabel = "Admin";
   } else if (session.role === "GERENTE") {
@@ -29,11 +32,13 @@ export async function UserInfo() {
       <div
         className={cn(
           "flex h-12 w-12 items-center justify-center rounded-lg",
-          session.role === "ADMIN"
-            ? "bg-purple-500/10 text-purple-500"
-            : session.role === "GERENTE"
-              ? "bg-primary/10 text-primary"
-              : "bg-blue-500/10 text-blue-500"
+          session.role === "SYSTEM"
+            ? "bg-red-500/10 text-red-500"
+            : session.role === "ADMIN"
+              ? "bg-purple-500/10 text-purple-500"
+              : session.role === "GERENTE"
+                ? "bg-primary/10 text-primary"
+                : "bg-blue-500/10 text-blue-500"
         )}
       >
         <Icon className="h-6 w-6" />
@@ -44,9 +49,9 @@ export async function UserInfo() {
           {session.name || "Usuário"}
         </p>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {session.teamName && (
+          {session.organizationName && (
             <>
-              <span>{session.teamName}</span>
+              <span>{session.organizationName}</span>
               <span>•</span>
             </>
           )}

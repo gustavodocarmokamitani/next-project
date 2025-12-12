@@ -19,7 +19,7 @@ export default async function AdminConfiguracoesPage() {
       id: true,
       name: true,
       email: true,
-      teamName: true,
+      organizationName: true,
     },
   })
 
@@ -42,7 +42,7 @@ export default async function AdminConfiguracoesPage() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
           <p className="text-muted-foreground mt-2">
-            Gerencie suas informações pessoais e da equipe
+            Gerencie suas informações pessoais e da organização
           </p>
         </div>
 

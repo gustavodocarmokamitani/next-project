@@ -79,6 +79,21 @@ export function ItensForm({ despesaId }: ItensFormProps) {
               Item obrigatório (atletas devem pagar este item ao confirmar presença)
             </Label>
           </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isFixed"
+              name="isFixed"
+              checked={isFixed}
+              onCheckedChange={(checked) => setIsFixed(checked === true)}
+            />
+            <Label
+              htmlFor="isFixed"
+              className="text-sm font-normal cursor-pointer"
+            >
+              Despesa fixa (não exibida para atletas, apenas para organizações)
+            </Label>
+          </div>
         </div>
       </div>
 

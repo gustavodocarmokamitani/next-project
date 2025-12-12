@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/get-session"
+import { randomUUID } from "crypto"
 import bcrypt from "bcryptjs"
 
 export async function createAtletaGerente(formData: FormData) {
@@ -261,5 +262,44 @@ export async function deleteAtletaGerente(id: string) {
 
   revalidatePath("/gerente/atletas")
   redirect("/gerente/atletas?success=Atleta deletado com sucesso!")
+}
+
+export async function generateAtletaInviteLinkGerente(formData: FormData) {
+  const session = await getSession()
+
+  if (!session || !session.managerId || !session.categoryIds || session.role !== "GERENTE") {
+    redirect("/login")
+  }
+
+  const categorias = formData.getAll("categorias") as string[]
+
+  if (categorias.length === 0) {
+    redirect("/gerente/atletas/adicionar?error=Selecione pelo menos uma categoria.&tab=convite")
+  }
+
+  // Valida se as categorias selecionadas são das categorias do gerente
+  const categoriasInvalidas = categorias.filter((catId) => !session.categoryIds?.includes(catId))
+
+  if (categoriasInvalidas.length > 0) {
+    redirect(
+      "/gerente/atletas/adicionar?error=Você não pode criar convites para categorias que não gerencia.&tab=convite",
+    )
+  }
+
+  const token = randomUUID()
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 7) // Expira em 7 dias
+
+  await prisma.athleteInvite.create({
+    data: {
+      token,
+      expiresAt,
+    },
+  })
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+  const link = `${baseUrl}/atleta/convite/${token}?categorias=${categorias.join(",")}`
+
+  redirect(`/gerente/atletas/adicionar?link=${encodeURIComponent(link)}&tab=convite`)
 }
 

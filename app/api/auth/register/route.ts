@@ -25,7 +25,7 @@ const createSession = async (userId: string) => {
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name } = await req.json()
+    const { email, password, name, organization } = await req.json()
 
     if (!email || !password) {
       return NextResponse.json(
@@ -55,6 +55,7 @@ export async function POST(req: Request) {
         email,
         password: passwordHash,
         name: name || null,
+        organizationName: organization && typeof organization === "string" ? organization.trim() : null,
       },
       select: {
         id: true,

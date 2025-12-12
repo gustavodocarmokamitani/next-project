@@ -117,7 +117,7 @@ export async function getEventosForAtleta(athleteId: string): Promise<EventoAtle
     const attendance = attendancesMap.get(evento.id)
     const confirmedItems = confirmedItemsMap.get(evento.id) || new Map()
     
-    // Pega a primeira despesa do evento (ou null se não houver)
+    // Pega o primeiro pagamento do evento (ou null se não houver)
     const payment = evento.payments[0] || null
 
     return {
@@ -134,14 +134,16 @@ export async function getEventosForAtleta(athleteId: string): Promise<EventoAtle
       confirmed: attendance?.confirmed || false,
       confirmedAt: attendance?.confirmedAt || null,
       paymentItems: payment
-        ? payment.items.map((item) => ({
-            id: item.id,
-            name: item.name,
-            value: item.value,
-            quantityEnabled: item.quantityEnabled,
-            required: item.required,
-            confirmedQuantity: confirmedItems.get(item.id) || 0,
-          }))
+        ? payment.items
+            .filter((item: any) => !item.isFixed) // Filtra despesas fixas (não exibidas para atletas)
+            .map((item: any) => ({
+              id: item.id,
+              name: item.name,
+              value: item.value,
+              quantityEnabled: item.quantityEnabled,
+              required: item.required,
+              confirmedQuantity: confirmedItems.get(item.id) || 0,
+            }))
         : [],
       paymentId: payment?.id || null,
     }
@@ -176,7 +178,7 @@ export async function getDespesasForAtleta(athleteId: string): Promise<DespesaAt
 
   const athleteCategoryIds = athlete.categories.map((ac) => ac.categoryId)
 
-  // Busca despesas que têm pelo menos uma categoria em comum com o atleta
+  // Busca pagamentos que têm pelo menos uma categoria em comum com o atleta
   const payments = await prisma.payment.findMany({
     where: {
       categories: {
@@ -239,14 +241,17 @@ export async function getDespesasForAtleta(athleteId: string): Promise<DespesaAt
     const paymentData = paymentsMap.get(payment.id)
     const paidItemsSet = paymentData?.paidItems || new Set()
 
-    // Verifica se todos os itens da despesa foram pagos
+    // Filtra despesas fixas antes de processar
+    const itemsNaoFixos = payment.items.filter((item: any) => !item.isFixed)
+    
+    // Verifica se todos os itens do pagamento foram pagos
     // Considera que itens obrigatórios devem estar pagos
-    const requiredItems = payment.items.filter((item) => item.required)
-    const allRequiredPaid = requiredItems.every((item) => paidItemsSet.has(item.id))
+    const requiredItems = itemsNaoFixos.filter((item: any) => item.required)
+    const allRequiredPaid = requiredItems.every((item: any) => paidItemsSet.has(item.id))
 
     // Se há itens não obrigatórios selecionados, eles também devem estar pagos
     // Mas se nenhum item não obrigatório foi selecionado, ainda conta como pago se os obrigatórios estão pagos
-    const isPaid = payment.items.length > 0 && allRequiredPaid
+    const isPaid = itemsNaoFixos.length > 0 && allRequiredPaid
     const paidAt = paymentData?.paidAt || null
 
     return {
@@ -261,7 +266,7 @@ export async function getDespesasForAtleta(athleteId: string): Promise<DespesaAt
         : null,
       paid: isPaid,
       paidAt,
-      items: payment.items.map((item) => ({
+      items: itemsNaoFixos.map((item: any) => ({
         id: item.id,
         name: item.name,
         value: item.value,

@@ -3,8 +3,14 @@
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
+import { getSession } from "@/lib/get-session"
 
 export async function createEvento(formData: FormData) {
+  const session = await getSession()
+  
+  if (!session || !session.organizationId || session.role !== "ADMIN") {
+    redirect("/login")
+  }
   const name = formData.get("nome")
   const date = formData.get("data")
   const location = formData.get("local")
@@ -29,15 +35,27 @@ export async function createEvento(formData: FormData) {
 
   if (criarDespesa) {
     if (!nomeDespesa || typeof nomeDespesa !== "string" || nomeDespesa.trim().length === 0) {
-      redirect("/home/eventos/adicionar?error=Nome da despesa é obrigatório quando criar despesa está marcado.")
+      redirect("/home/eventos/adicionar?error=Nome do pagamento é obrigatório quando criar pagamento está marcado.")
     }
 
     if (!vencimentoDespesa || typeof vencimentoDespesa !== "string") {
-      redirect("/home/eventos/adicionar?error=Data de vencimento da despesa é obrigatória.")
+      redirect("/home/eventos/adicionar?error=Data de vencimento do pagamento é obrigatória.")
     }
   }
 
   const dateObj = new Date(date)
+
+  // Verifica se as categorias pertencem à organização
+  const categoriasValidas = await prisma.category.findMany({
+    where: {
+      id: { in: categorias as string[] },
+      organizationId: session.organizationId,
+    },
+  })
+
+  if (categoriasValidas.length !== categorias.length) {
+    redirect("/home/eventos/adicionar?error=Uma ou mais categorias não pertencem à sua organização.")
+  }
 
   // Cria o evento
   const evento = await prisma.event.create({
@@ -47,6 +65,7 @@ export async function createEvento(formData: FormData) {
       location: location && typeof location === "string" ? location.trim() : null,
       type: type.trim(),
       description: description && typeof description === "string" ? description.trim() : null,
+      organizationId: session.organizationId,
       categories: {
         create: categorias.map((catId) => ({
           categoryId: catId as string,
@@ -55,7 +74,7 @@ export async function createEvento(formData: FormData) {
     },
   })
 
-  // Se criarDespesa estiver marcado, cria a despesa automaticamente
+  // Se criarDespesa estiver marcado, cria o pagamento automaticamente
   if (criarDespesa && categorias.length > 0) {
     const dueDateObj = new Date(vencimentoDespesa as string)
 
@@ -74,7 +93,7 @@ export async function createEvento(formData: FormData) {
 
     revalidatePath("/home/eventos")
     revalidatePath("/home/despesas")
-    redirect(`/home/despesas/${payment.id}/itens?success=Evento e despesa criados com sucesso! Agora adicione os itens.`)
+    redirect(`/home/despesas/${payment.id}/itens?success=Evento e pagamento criados com sucesso! Agora adicione os itens.`)
   }
 
   revalidatePath("/home/eventos")

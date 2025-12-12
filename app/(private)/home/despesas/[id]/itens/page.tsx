@@ -45,10 +45,10 @@ export default async function DespesaItensPage({ params }: DespesaItensPageProps
           <BackButton className="md:hidden w-full" href="/home/despesas" />
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-foreground">
-              Itens da Despesa: {despesa.name}
+              Itens do Pagamento: {despesa.name}
             </h1>
             <p className="text-muted-foreground mt-2">
-              Adicione os itens que serão cobrados nesta despesa
+              Adicione os itens que serão cobrados neste pagamento
             </p>
           </div>
           {despesa.items.length > 0 && (

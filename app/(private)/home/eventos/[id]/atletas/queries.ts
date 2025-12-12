@@ -170,22 +170,24 @@ export async function getAtletasDoEvento(eventoId: string): Promise<AtletaEvento
       ]),
     )
 
-    // Mapeia todos os itens de pagamento disponíveis
+    // Mapeia todos os itens de pagamento disponíveis (filtra despesas fixas)
     const items = payment
-      ? payment.items.map((item) => {
-          const athleteItem = paidItemsMap.get(item.id)
-          return {
-            id: item.id,
-            name: item.name,
-            value: item.value,
-            quantityEnabled: item.quantityEnabled,
-            required: item.required,
-            confirmedQuantity: athleteItem?.confirmedQuantity || 0,
-            paidQuantity: athleteItem?.paidQuantity || 0,
-            paid: athleteItem?.paid || false,
-            paidAt: athleteItem?.paidAt || null,
-          }
-        })
+      ? payment.items
+          .filter((item) => !item.isFixed) // Filtra despesas fixas (não exibidas para atletas)
+          .map((item) => {
+            const athleteItem = paidItemsMap.get(item.id)
+            return {
+              id: item.id,
+              name: item.name,
+              value: item.value,
+              quantityEnabled: item.quantityEnabled,
+              required: item.required,
+              confirmedQuantity: athleteItem?.confirmedQuantity || 0,
+              paidQuantity: athleteItem?.paidQuantity || 0,
+              paid: athleteItem?.paid || false,
+              paidAt: athleteItem?.paidAt || null,
+            }
+          })
       : []
 
     return {

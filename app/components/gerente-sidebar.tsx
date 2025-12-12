@@ -34,7 +34,7 @@ const navigationItems = [
     icon: Trophy,
   },
   {
-    label: "Despesas",
+    label: "Pagamentos",
     href: "/gerente/despesas",
     icon: Receipt,
   },

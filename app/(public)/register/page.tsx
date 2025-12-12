@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +10,7 @@ import { authApi } from "@/lib/auth-api"
 import { UserPlus, Mail, Lock, User, Building2 } from "lucide-react"
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -42,11 +44,13 @@ export default function RegisterPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        organization: formData.organization,
       })
+      // Redireciona para login após registro bem-sucedido
+      router.push("/login")
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao criar conta"
       setError(message)
-    } finally {
       setIsLoading(false)
     }
   }

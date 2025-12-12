@@ -37,9 +37,9 @@ export default async function HomePage() {
             <h1 className="text-3xl font-bold text-foreground mb-2">
               Bem-vindo, {session.name || "Usuário"}!
             </h1>
-            {session.teamName && (
+            {session.organizationName && (
               <p className="text-lg text-primary font-semibold mb-2">
-                {session.teamName}
+                {session.organizationName}
               </p>
             )}
             <p className="text-muted-foreground">
@@ -117,7 +117,7 @@ export default async function HomePage() {
           >
             <Link href="/home/despesas">
               <CircleDollarSign className="h-6 w-6" />
-              <span>Criar Despesas</span>
+              <span>Criar Pagamentos</span>
             </Link>
           </Button>
         </div>
@@ -262,14 +262,14 @@ export default async function HomePage() {
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-foreground mb-1">
-                Eventos e Despesas
+                Eventos e Pagamentos
               </h3>
               <p className="text-sm text-muted-foreground">
                 Quando a equipe estiver pronta, você pode{" "}
                 <strong className="text-primary">
-                  criar eventos e despesas
+                  criar eventos e pagamentos
                 </strong>{" "}
-                para eventos específicos ou despesas gerais.
+                para eventos específicos ou pagamentos gerais.
               </p>
             </div>
           </div>

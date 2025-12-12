@@ -113,14 +113,14 @@ export function EventoForm({ categorias, tiposEvento }: EventoFormProps) {
               htmlFor="criarDespesa"
               className="text-sm font-medium cursor-pointer"
             >
-              Criar despesa automaticamente para este evento
+              Criar pagamento automaticamente para este evento
             </Label>
           </div>
 
           {criarDespesa && (
             <div className="space-y-4 pl-6 border-l-2 border-primary/20">
               <div className="space-y-2">
-                <Label htmlFor="nomeDespesa">Nome da Despesa *</Label>
+                <Label htmlFor="nomeDespesa">Nome do Pagamento *</Label>
                 <Input
                   id="nomeDespesa"
                   name="nomeDespesa"
@@ -138,7 +138,7 @@ export function EventoForm({ categorias, tiposEvento }: EventoFormProps) {
                   required={criarDespesa}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Após criar, você será redirecionado para adicionar os itens da despesa
+                  Após criar, você será redirecionado para adicionar os itens do pagamento
                 </p>
               </div>
             </div>

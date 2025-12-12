@@ -5,6 +5,7 @@ type RegisterPayload = {
   name?: string
   email: string
   password: string
+  organization?: string
 }
 
 type LoginPayload = {

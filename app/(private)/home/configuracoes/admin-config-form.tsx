@@ -12,7 +12,7 @@ type AdminConfigFormProps = {
     id: string
     name: string | null
     email: string | null
-    teamName: string | null
+    organizationName: string | null
   }
 }
 
@@ -50,12 +50,12 @@ export function AdminConfigForm({ user }: AdminConfigFormProps) {
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="teamName">Nome da Equipe</Label>
+          <Label htmlFor="organizationName">Nome da Organização</Label>
           <Input
-            id="teamName"
-            name="teamName"
-            defaultValue={user.teamName || ""}
-            placeholder="Ex: Time ABC"
+            id="organizationName"
+            name="organizationName"
+            defaultValue={user.organizationName || ""}
+            placeholder="Ex: Federação Paulista, Confederação Brasileira, Time ABC"
           />
         </div>
       </div>

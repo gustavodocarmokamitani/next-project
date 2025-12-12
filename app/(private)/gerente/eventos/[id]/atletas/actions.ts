@@ -75,7 +75,7 @@ export async function confirmarPresencaAtletaGerente(
     })
   }
 
-  // Se há itens e uma despesa, processa os itens
+  // Se há itens e um pagamento, processa os itens
   const payment = evento.payments[0]
   if (payment && items && items.length > 0) {
     const itemsMap = new Map(items.map((item) => [item.itemId, item.quantity]))
@@ -191,7 +191,7 @@ export async function registrarPagamentoAtletaGerente(
     redirect("/login")
   }
 
-  // Busca o evento e a despesa
+  // Busca o evento e o pagamento
   const evento = await prisma.event.findUnique({
     where: { id: eventoId },
     include: {
@@ -205,7 +205,7 @@ export async function registrarPagamentoAtletaGerente(
   })
 
   if (!evento || !evento.payments[0]) {
-    redirect(`/gerente/eventos/${eventoId}/atletas?error=Evento ou despesa não encontrada.`)
+    redirect(`/gerente/eventos/${eventoId}/atletas?error=Evento ou pagamento não encontrado.`)
   }
 
   // Verifica se o gerente tem acesso

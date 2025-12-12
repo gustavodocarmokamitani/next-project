@@ -1,0 +1,284 @@
+classDiagram
+    class Organization {
+        +String id
+        +String name
+        +String stripeAccountId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    
+    class User {
+        +String id
+        +String name
+        +String email
+        +String password
+        +Boolean emailVerified
+        +String role
+        +DateTime createdAt
+        +DateTime updatedAt
+        +String phone
+        +String organizationName
+        +String organizationId
+    }
+    
+    class Manager {
+        +String id
+        +String firstName
+        +String lastName
+        +String phone
+        +String userId
+        +DateTime createdAt
+        +DateTime updatedAt
+        +String organizationId
+    }
+    
+    class Athlete {
+        +String id
+        +String firstName
+        +String lastName
+        +String phone
+        +String federationId
+        +DateTime birthDate
+        +String userId
+        +String shirtNumber
+        +String confederationId
+        +DateTime createdAt
+        +DateTime updatedAt
+        +String organizationId
+    }
+    
+    class Category {
+        +String id
+        +String name
+        +DateTime createdAt
+        +DateTime updatedAt
+        +String organizationId
+    }
+    
+    class ManagerCategory {
+        +String managerId
+        +String categoryId
+    }
+    
+    class CategoryAthlete {
+        +String athleteId
+        +String categoryId
+    }
+    
+    class ManagerInvite {
+        +String id
+        +String token
+        +DateTime expiresAt
+        +DateTime createdAt
+        +Boolean used
+        +String organizationId
+    }
+    
+    class AthleteInvite {
+        +String id
+        +String token
+        +DateTime expiresAt
+        +DateTime createdAt
+        +Boolean used
+        +String organizationId
+    }
+    
+    class Event {
+        +String id
+        +String name
+        +DateTime date
+        +String location
+        +String type
+        +String description
+        +DateTime createdAt
+        +DateTime updatedAt
+        +String organizationId
+    }
+    
+    class EventCategory {
+        +String eventId
+        +String categoryId
+    }
+    
+    class EventAttendance {
+        +String id
+        +String eventId
+        +String athleteId
+        +Boolean confirmed
+        +DateTime confirmedAt
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    
+    class Payment {
+        +String id
+        +String name
+        +DateTime dueDate
+        +Boolean isFinalized
+        +String eventId
+        +String championshipId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    
+    class PaymentCategory {
+        +String paymentId
+        +String categoryId
+    }
+    
+    class PaymentItem {
+        +String id
+        +String name
+        +Float value
+        +Boolean quantityEnabled
+        +String paymentId
+        +DateTime createdAt
+        +DateTime updatedAt
+        +Boolean required
+        +Boolean isFixed
+    }
+    
+    class AthletePaymentItem {
+        +String id
+        +String attendanceId
+        +String paymentItemId
+        +Boolean paid
+        +DateTime paidAt
+        +DateTime createdAt
+        +DateTime updatedAt
+        +Int confirmedQuantity
+        +Int paidQuantity
+    }
+    
+    class Championship {
+        +String id
+        +String name
+        +String description
+        +DateTime startDate
+        +DateTime endDate
+        +String location
+        +String organizerId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    
+    class ChampionshipCategory {
+        +String id
+        +String championshipId
+        +String categoryId
+        +String name
+        +Boolean allowUpgrade
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    
+    class ChampionshipEntry {
+        +String id
+        +String championshipId
+        +String organizationId
+        +String championshipCategoryId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    
+    class ChampionshipAthleteEntry {
+        +String id
+        +String entryId
+        +String athleteId
+        +Boolean confirmed
+        +DateTime confirmedAt
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    
+    class ChampionshipInvite {
+        +String id
+        +String championshipId
+        +String organizationId
+        +String token
+        +DateTime expiresAt
+        +Boolean used
+        +DateTime usedAt
+        +DateTime createdAt
+    }
+    
+    class Session {
+        +String id
+        +String token
+        +DateTime expiresAt
+        +DateTime createdAt
+        +DateTime updatedAt
+        +String userId
+    }
+    
+    class PasswordResetToken {
+        +String id
+        +String token
+        +String code
+        +String userId
+        +DateTime expiresAt
+        +Boolean used
+        +DateTime createdAt
+    }
+    
+    %% Organization relationships
+    Organization "1" *-- "0..*" User : admin
+    Organization "1" *-- "0..*" Manager : has
+    Organization "1" *-- "0..*" Athlete : has
+    Organization "1" *-- "0..*" Category : has
+    Organization "1" *-- "0..*" Event : organizes
+    Organization "1" *-- "0..*" ManagerInvite : sends
+    Organization "1" *-- "0..*" AthleteInvite : sends
+    Organization "1" *-- "0..1" Championship : organizes
+    Organization "1" *-- "0..*" ChampionshipEntry : registered_in
+    Organization "1" *-- "0..*" ChampionshipInvite : receives
+    
+    %% User relationships
+    User "1" *-- "0..1" Manager : can_be
+    User "1" *-- "0..1" Athlete : can_be
+    User "1" *-- "0..*" Session : has
+    User "1" *-- "0..*" PasswordResetToken : has
+    
+    %% Manager relationships
+    Manager "0..*" o-- "0..*" Category : manages
+    Manager "1" *-- "0..*" ManagerCategory : has
+    ManagerCategory "0..*" *-- "1" Category : belongs_to
+    
+    %% Athlete relationships
+    Athlete "0..*" o-- "0..*" Category : belongs_to
+    Athlete "1" *-- "0..*" CategoryAthlete : has
+    CategoryAthlete "0..*" *-- "1" Category : belongs_to
+    Athlete "1" *-- "0..*" EventAttendance : participates
+    Athlete "1" *-- "0..*" ChampionshipAthleteEntry : participates
+    
+    %% Event relationships
+    Event "0..*" o-- "0..*" Category : has
+    Event "1" *-- "0..*" EventCategory : has
+    EventCategory "0..*" *-- "1" Category : belongs_to
+    Event "1" *-- "0..*" EventAttendance : has
+    Event "1" *-- "0..*" Payment : can_have
+    
+    %% Payment relationships
+    Payment "0..*" o-- "0..*" Category : has
+    Payment "1" *-- "0..*" PaymentCategory : has
+    PaymentCategory "0..*" *-- "1" Category : belongs_to
+    Payment "1" *-- "0..*" PaymentItem : has
+    
+    %% EventAttendance relationships
+    EventAttendance "1" *-- "0..*" AthletePaymentItem : has
+    AthletePaymentItem "0..*" *-- "1" PaymentItem : belongs_to
+    
+    %% Championship relationships
+    Championship "1" *-- "0..*" ChampionshipCategory : has
+    Championship "1" *-- "0..*" Payment : can_have
+    Championship "1" *-- "0..*" ChampionshipInvite : sends
+    ChampionshipCategory "0..1" o-- "1" Category : may_reference
+    ChampionshipCategory "1" *-- "0..*" ChampionshipEntry : has
+    
+    %% ChampionshipEntry relationships
+    ChampionshipEntry "0..*" *-- "1" Championship : belongs_to
+    ChampionshipEntry "0..*" *-- "1" Organization : registered
+    ChampionshipEntry "0..*" *-- "1" ChampionshipCategory : in_category
+    ChampionshipEntry "1" *-- "0..*" ChampionshipAthleteEntry : has
+    ChampionshipAthleteEntry "0..*" *-- "1" ChampionshipEntry : belongs_to
+

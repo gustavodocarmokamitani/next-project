@@ -34,7 +34,7 @@ export function DeleteDespesaDialog({
       await deleteDespesa(despesaId)
     } catch (error) {
       setIsDeleting(false)
-      console.error("Erro ao deletar despesa:", error)
+      console.error("Erro ao deletar pagamento:", error)
     }
   }
 
@@ -47,7 +47,7 @@ export function DeleteDespesaDialog({
         <DialogHeader>
           <DialogTitle>Confirmar exclusão</DialogTitle>
           <DialogDescription>
-            Tem certeza que deseja deletar a despesa{" "}
+            Tem certeza que deseja deletar o pagamento{" "}
             <strong className="text-foreground">{despesaNome}</strong>? Esta
             ação não pode ser desfeita.
           </DialogDescription>

@@ -16,7 +16,7 @@ export async function updateAdminPerfil(formData: FormData) {
   const id = formData.get("id")
   const name = formData.get("name")
   const email = formData.get("email")
-  const teamName = formData.get("teamName")
+  const organizationName = formData.get("organizationName")
 
   if (!id || typeof id !== "string" || id !== session.id) {
     redirect("/home/configuracoes?error=ID inválido.")
@@ -45,7 +45,7 @@ export async function updateAdminPerfil(formData: FormData) {
     data: {
       name: name.trim(),
       email: email.trim(),
-      teamName: teamName && typeof teamName === "string" ? teamName.trim() : null,
+      organizationName: organizationName && typeof organizationName === "string" ? organizationName.trim() : null,
     },
   })
 

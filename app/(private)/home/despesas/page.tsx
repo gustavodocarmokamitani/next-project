@@ -10,7 +10,7 @@ import { SearchWrapper } from "./search-wrapper"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 
-export default async function DespesasPage() {
+export default async function PagamentosPage() {
   const session = await getSession()
 
   if (!session) {
@@ -37,7 +37,7 @@ export default async function DespesasPage() {
               <div className="hidden md:block">
                 <h1 className="text-3xl font-bold text-foreground">Pagamentos</h1>
                 <p className="text-muted-foreground mt-2">
-                  Gerencie os pagamentos e despesas
+                  Gerencie os pagamentos da organização
                 </p>
               </div>
               <div className="md:hidden">
@@ -64,16 +64,16 @@ export default async function DespesasPage() {
         </div>
       </div>
 
-      {/* Despesas com busca */}
+      {/* Pagamentos com busca */}
       {despesas.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-8 text-center">
           <p className="text-muted-foreground mb-4">
-            Nenhuma despesa cadastrada ainda.
+            Nenhum pagamento cadastrado ainda.
           </p>
           <Button asChild>
             <Link href="/home/despesas/adicionar">
               <Plus className="h-4 w-4 mr-2" />
-              Adicionar Primeira Despesa
+              Adicionar Primeiro Pagamento
             </Link>
           </Button>
         </div>

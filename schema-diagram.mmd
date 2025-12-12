@@ -1,0 +1,281 @@
+erDiagram
+    Organization ||--o{ User : "tem admins"
+    Organization ||--o{ Manager : "tem"
+    Organization ||--o{ Athlete : "tem"
+    Organization ||--o{ Category : "tem"
+    Organization ||--o{ Event : "organiza"
+    Organization ||--o{ ManagerInvite : "envia"
+    Organization ||--o{ AthleteInvite : "envia"
+    Organization ||--o| Championship : "organiza"
+    Organization ||--o{ ChampionshipEntry : "inscrita em"
+    Organization ||--o{ ChampionshipInvite : "recebe"
+
+    User ||--o| Manager : "pode ser"
+    User ||--o| Athlete : "pode ser"
+    User ||--o{ Session : "tem"
+    User ||--o{ PasswordResetToken : "tem"
+
+    Manager }o--o{ Category : "gerencia"
+    ManagerCategory }o--|| Manager : "pertence"
+    ManagerCategory }o--|| Category : "pertence"
+
+    Athlete }o--o{ Category : "pertence"
+    CategoryAthlete }o--|| Athlete : "pertence"
+    CategoryAthlete }o--|| Category : "pertence"
+
+    Event }o--o{ Category : "tem"
+    EventCategory }o--|| Event : "pertence"
+    EventCategory }o--|| Category : "pertence"
+
+    Event ||--o{ EventAttendance : "tem"
+    Athlete ||--o{ EventAttendance : "participa"
+    EventAttendance ||--o{ AthletePaymentItem : "tem"
+
+    Event ||--o{ Payment : "pode ter"
+    Championship ||--o{ Payment : "pode ter"
+    Payment }o--o{ Category : "tem"
+    PaymentCategory }o--|| Payment : "pertence"
+    PaymentCategory }o--|| Category : "pertence"
+
+    Payment ||--o{ PaymentItem : "tem"
+    PaymentItem ||--o{ AthletePaymentItem : "usado em"
+    AthletePaymentItem }o--|| EventAttendance : "pertence"
+    AthletePaymentItem }o--|| PaymentItem : "pertence"
+
+    Championship ||--o{ ChampionshipCategory : "tem"
+    ChampionshipCategory }o--o| Category : "pode referenciar"
+    ChampionshipCategory ||--o{ ChampionshipEntry : "tem"
+    
+    ChampionshipEntry }o--|| Championship : "pertence"
+    ChampionshipEntry }o--|| Organization : "inscrita"
+    ChampionshipEntry }o--|| ChampionshipCategory : "em categoria"
+    ChampionshipEntry ||--o{ ChampionshipAthleteEntry : "tem"
+    
+    ChampionshipAthleteEntry }o--|| ChampionshipEntry : "pertence"
+    ChampionshipAthleteEntry }o--|| Athlete : "inclui"
+    Athlete ||--o{ ChampionshipAthleteEntry : "participa"
+
+    Championship ||--o{ ChampionshipInvite : "envia"
+
+    Organization {
+        string id PK
+        string name UK
+        string stripeAccountId
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    User {
+        string id PK
+        string name
+        string email UK
+        string password
+        boolean emailVerified
+        string role
+        datetime createdAt
+        datetime updatedAt
+        string phone UK
+        string organizationName
+        string organizationId FK
+    }
+
+    Session {
+        string id PK
+        string token UK
+        datetime expiresAt
+        datetime createdAt
+        datetime updatedAt
+        string userId FK
+    }
+
+    PasswordResetToken {
+        string id PK
+        string token UK
+        string code
+        string userId FK
+        datetime expiresAt
+        boolean used
+        datetime createdAt
+    }
+
+    Manager {
+        string id PK
+        string firstName
+        string lastName
+        string phone UK
+        string userId UK_FK
+        datetime createdAt
+        datetime updatedAt
+        string organizationId FK
+    }
+
+    Category {
+        string id PK
+        string name
+        datetime createdAt
+        datetime updatedAt
+        string organizationId FK
+    }
+
+    ManagerCategory {
+        string managerId PK_FK
+        string categoryId PK_FK
+    }
+
+    ManagerInvite {
+        string id PK
+        string token UK
+        datetime expiresAt
+        datetime createdAt
+        boolean used
+        string organizationId FK
+    }
+
+    Athlete {
+        string id PK
+        string firstName
+        string lastName
+        string phone UK
+        string federationId
+        datetime birthDate
+        string userId UK_FK
+        string shirtNumber
+        string confederationId
+        datetime createdAt
+        datetime updatedAt
+        string organizationId FK
+    }
+
+    CategoryAthlete {
+        string athleteId PK_FK
+        string categoryId PK_FK
+    }
+
+    AthleteInvite {
+        string id PK
+        string token UK
+        datetime expiresAt
+        datetime createdAt
+        boolean used
+        string organizationId FK
+    }
+
+    Event {
+        string id PK
+        string name
+        datetime date
+        string location
+        string type
+        string description
+        datetime createdAt
+        datetime updatedAt
+        string organizationId FK
+    }
+
+    EventCategory {
+        string eventId PK_FK
+        string categoryId PK_FK
+    }
+
+    Payment {
+        string id PK
+        string name
+        datetime dueDate
+        boolean isFinalized
+        string eventId FK
+        string championshipId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    PaymentCategory {
+        string paymentId PK_FK
+        string categoryId PK_FK
+    }
+
+    PaymentItem {
+        string id PK
+        string name
+        float value
+        boolean quantityEnabled
+        string paymentId FK
+        datetime createdAt
+        datetime updatedAt
+        boolean required
+        boolean isFixed
+    }
+
+    EventAttendance {
+        string id PK
+        string eventId FK
+        string athleteId FK
+        boolean confirmed
+        datetime confirmedAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    AthletePaymentItem {
+        string id PK
+        string attendanceId FK
+        string paymentItemId FK
+        boolean paid
+        datetime paidAt
+        datetime createdAt
+        datetime updatedAt
+        int confirmedQuantity
+        int paidQuantity
+    }
+
+    Championship {
+        string id PK
+        string name
+        string description
+        datetime startDate
+        datetime endDate
+        string location
+        string organizerId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ChampionshipCategory {
+        string id PK
+        string championshipId FK
+        string categoryId FK
+        string name
+        boolean allowUpgrade
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ChampionshipEntry {
+        string id PK
+        string championshipId FK
+        string organizationId FK
+        string championshipCategoryId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ChampionshipAthleteEntry {
+        string id PK
+        string entryId FK
+        string athleteId FK
+        boolean confirmed
+        datetime confirmedAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ChampionshipInvite {
+        string id PK
+        string championshipId FK
+        string organizationId FK
+        string token
+        datetime expiresAt
+        boolean used
+        datetime usedAt
+        datetime createdAt
+    }
+

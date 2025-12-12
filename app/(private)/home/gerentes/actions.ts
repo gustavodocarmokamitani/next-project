@@ -3,10 +3,16 @@
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
+import { getSession } from "@/lib/get-session"
 import { randomUUID } from "crypto"
 import bcrypt from "bcryptjs"
 
 export async function createGerente(formData: FormData) {
+  const session = await getSession()
+  
+  if (!session || !session.organizationId || session.role !== "ADMIN") {
+    redirect("/login")
+  }
   const firstName = formData.get("firstName")
   const lastName = formData.get("lastName")
   const phone = formData.get("phone")
@@ -52,6 +58,18 @@ export async function createGerente(formData: FormData) {
     },
   })
 
+  // Verifica se as categorias pertencem à organização
+  const categoriasValidas = await prisma.category.findMany({
+    where: {
+      id: { in: categorias as string[] },
+      organizationId: session.organizationId,
+    },
+  })
+
+  if (categoriasValidas.length !== categorias.length) {
+    redirect("/home/gerentes/adicionar?error=Uma ou mais categorias não pertencem à sua organização.")
+  }
+
   // Cria o gerente
   await prisma.manager.create({
     data: {
@@ -59,6 +77,7 @@ export async function createGerente(formData: FormData) {
       lastName: lastName.trim(),
       phone: phone.trim(),
       userId: user.id,
+      organizationId: session.organizationId,
       categories: {
         create: categorias.map((catId) => ({
           categoryId: catId as string,

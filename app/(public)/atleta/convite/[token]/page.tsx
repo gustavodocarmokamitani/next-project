@@ -109,7 +109,7 @@ export default function AtletaConvitePage() {
       }
 
       // Redireciona para o home
-      router.push("/home")
+      router.push("/login")
       router.refresh()
     } catch (err) {
       setError("Erro ao criar conta. Tente novamente.")

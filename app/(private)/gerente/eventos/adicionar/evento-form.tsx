@@ -104,10 +104,10 @@ export function EventoForm({ categorias, tiposEvento }: EventoFormProps) {
             <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-1">
-                Despesa será criada automaticamente
+                Pagamento será criado automaticamente
               </p>
               <p className="text-xs text-blue-700 dark:text-blue-300">
-                Uma despesa será criada automaticamente para este evento. Você será redirecionado para adicionar os itens após criar o evento.
+                Um pagamento será criado automaticamente para este evento. Você será redirecionado para adicionar os itens após criar o evento.
               </p>
             </div>
           </div>

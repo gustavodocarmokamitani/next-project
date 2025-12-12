@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation"
 import { Suspense } from "react"
 import { getSession } from "@/lib/get-session"
-import { getCategoriasDoGerente } from "../categorias/queries"
+import { getCategoriasDoGerente } from "@/app/(private)/gerente/categorias/queries"
 import { BackButton } from "@/app/components/back-button"
 import { AlertMessage } from "@/app/components/alert-message"
-import { CadastroDiretoForm } from "./cadastro-direto-form"
+import { TabsWrapper } from "./tabs-wrapper"
 
 export default async function AdicionarAtletaPage() {
   const session = await getSession()
@@ -28,16 +28,16 @@ export default async function AdicionarAtletaPage() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Adicionar Atleta</h1>
             <p className="text-muted-foreground mt-2">
-              Cadastre um atleta nas suas categorias
+              Cadastre um atleta diretamente ou gere um link de convite
             </p>
           </div>
         </div>
       </div>
 
-      {/* Form Card */}
-      <div className="rounded-lg border border-border bg-card p-8">
-        <CadastroDiretoForm categorias={categorias} />
-      </div>
+      {/* Tabs */}
+      <Suspense fallback={<div className="rounded-lg border border-border bg-card p-8">Carregando...</div>}>
+        <TabsWrapper categorias={categorias} />
+      </Suspense>
     </div>
   )
 }

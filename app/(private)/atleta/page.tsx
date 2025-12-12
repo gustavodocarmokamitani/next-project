@@ -26,9 +26,9 @@ export default async function AtletaPage() {
             <h1 className="text-3xl font-bold text-foreground mb-2">
               Bem-vindo, {session.name || "Atleta"}!
             </h1>
-            {session.teamName && (
+            {session.organizationName && (
               <p className="text-lg text-primary font-semibold mb-2">
-                {session.teamName}
+                {session.organizationName}
               </p>
             )}
             <p className="text-muted-foreground">

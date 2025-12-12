@@ -64,7 +64,7 @@ export default async function DespesasPage() {
         </div>
       </div>
 
-      {/* Despesas com busca */}
+      {/* Pagamentos com busca */}
       {despesas.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-8 text-center">
           <p className="text-muted-foreground mb-4">
@@ -73,7 +73,7 @@ export default async function DespesasPage() {
           <Button asChild>
             <Link href="/gerente/despesas/adicionar">
               <Plus className="h-4 w-4 mr-2" />
-              Adicionar Primeira Despesa
+              Adicionar Primeiro Pagamento
             </Link>
           </Button>
         </div>

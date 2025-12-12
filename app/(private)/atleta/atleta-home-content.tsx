@@ -109,7 +109,7 @@ export function AtletaHomeContent({ eventos, despesas, athleteId }: AtletaHomeCo
     })
   }, [eventos, searchEventos])
 
-  // Filtra despesas
+  // Filtra pagamentos
   const despesasFiltradas = useMemo(() => {
     if (!searchDespesas.trim()) {
       return despesas
@@ -293,17 +293,17 @@ export function AtletaHomeContent({ eventos, despesas, athleteId }: AtletaHomeCo
         <h2 className="text-2xl font-semibold text-foreground mb-6">Despesas</h2>
         <div className="mb-6">
           <SearchInput
-            placeholder="Buscar despesas por nome, evento, itens..."
+            placeholder="Buscar pagamentos por nome, evento, itens..."
             value={searchDespesas}
             onChange={handleSearchDespesasChange}
           />
         </div>
         
         {despesas.length === 0 ? (
-          <p className="text-muted-foreground">Nenhuma despesa disponível no momento.</p>
+          <p className="text-muted-foreground">Nenhum pagamento disponível no momento.</p>
         ) : despesasFiltradas.length === 0 ? (
           <p className="text-muted-foreground">
-            Nenhuma despesa encontrada com o termo de busca.
+            Nenhum pagamento encontrado com o termo de busca.
           </p>
         ) : (
           <>
@@ -331,7 +331,7 @@ export function AtletaHomeContent({ eventos, despesas, athleteId }: AtletaHomeCo
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                       <div>
                         <p className="text-sm font-medium text-green-500">
-                          Despesa paga com sucesso
+                          Pagamento pago com sucesso
                         </p>
                         {despesa.paidAt && (
                           <p className="text-xs text-muted-foreground mt-1">

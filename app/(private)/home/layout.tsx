@@ -20,7 +20,7 @@ export default async function HomeLayout({
     redirect("/atleta")
   }
 
-  // Apenas ADMIN acessa /home
+  // ADMIN e SYSTEM acessam /home
   return (
     <div className="flex min-h-screen">
       <Sidebar />

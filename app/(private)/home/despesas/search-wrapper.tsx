@@ -61,7 +61,7 @@ export function SearchWrapper({ despesas, categorias }: SearchWrapperProps) {
     })
   }, [despesas, searchTerm])
 
-  // Ordena despesas por data de vencimento
+  // Ordena pagamentos por data de vencimento
   const sortedDespesas = useMemo(() => {
     const sorted = [...filteredDespesas]
     sorted.sort((a, b) => {
@@ -72,7 +72,7 @@ export function SearchWrapper({ despesas, categorias }: SearchWrapperProps) {
     return sorted
   }, [filteredDespesas, sortOrder])
 
-  // Agrupa despesas filtradas por categoria (uma despesa pode aparecer em múltiplas categorias)
+  // Agrupa pagamentos filtrados por categoria (um pagamento pode aparecer em múltiplas categorias)
   const despesasPorCategoria = useMemo(() => {
     return categorias.map((cat) => ({
       categoria: cat,
@@ -115,8 +115,8 @@ export function SearchWrapper({ despesas, categorias }: SearchWrapperProps) {
         <div className="rounded-lg border border-border bg-card p-8 text-center">
           <p className="text-muted-foreground">
             {searchTerm
-              ? "Nenhuma despesa encontrada com o termo de busca."
-              : "Nenhuma despesa cadastrada ainda."}
+              ? "Nenhum pagamento encontrado com o termo de busca."
+              : "Nenhum pagamento cadastrado ainda."}
           </p>
         </div>
       ) : (

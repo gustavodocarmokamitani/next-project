@@ -65,7 +65,7 @@ export async function confirmarPresencaAtleta(
     })
   }
 
-  // Se há itens e uma despesa, processa os itens
+  // Se há itens e um pagamento, processa os itens
   const payment = evento.payments[0]
   if (payment && items && items.length > 0) {
     const itemsMap = new Map(items.map((item) => [item.itemId, item.quantity]))
@@ -174,7 +174,7 @@ export async function registrarPagamentoAtleta(
   })
 
   if (!evento || !evento.payments[0]) {
-    redirect(`/home/eventos/${eventoId}/atletas?error=Evento ou despesa não encontrada.`)
+    redirect(`/home/eventos/${eventoId}/atletas?error=Evento ou pagamento não encontrado.`)
   }
 
   // Busca ou cria a attendance

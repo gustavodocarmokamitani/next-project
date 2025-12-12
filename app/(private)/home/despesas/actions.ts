@@ -152,6 +152,7 @@ export async function addItemToDespesa(formData: FormData) {
   const value = formData.get("valor")
   const quantityEnabled = formData.get("quantityEnabled") === "on"
   const required = formData.get("required") === "on"
+  const isFixed = formData.get("isFixed") === "on"
 
   if (!paymentId || typeof paymentId !== "string") {
     redirect("/home/despesas?error=ID da despesa inválido.")
@@ -176,6 +177,7 @@ export async function addItemToDespesa(formData: FormData) {
       value: valueNum,
       quantityEnabled,
       required,
+      isFixed,
       paymentId,
     },
   })

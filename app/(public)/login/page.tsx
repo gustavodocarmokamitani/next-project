@@ -33,8 +33,9 @@ export default function LoginPage() {
       
       // Redireciona baseado no tipo de usuário retornado pela API
       const redirectPath = (response as any).redirectPath || searchParams.get("redirect") || "/home"
-      router.push(redirectPath)
-      router.refresh()
+      
+      // Usa window.location para garantir que o cookie seja enviado corretamente
+      window.location.href = redirectPath
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao autenticar"
       setError(message)

@@ -23,13 +23,13 @@ export default async function GerentePage() {
             <h1 className="text-3xl font-bold text-foreground mb-2">
               Bem-vindo, {session.name || "Gerente"}!
             </h1>
-            {session.teamName && (
+            {session.organizationName && (
               <p className="text-lg text-primary font-semibold mb-2">
-                {session.teamName}
+                {session.organizationName}
               </p>
             )}
             <p className="text-muted-foreground">
-              Gerencie suas categorias, atletas, eventos e despesas
+              Gerencie suas categorias, atletas, eventos e pagamentos
             </p>
           </div>
           <div className="flex items-center gap-3 mt-4 md:mt-0">
