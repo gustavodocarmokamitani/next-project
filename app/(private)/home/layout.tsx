@@ -24,7 +24,7 @@ export default async function HomeLayout({
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 w-full p-4 md:p-8 md:ml-64">{children}</main>
+      <main className="flex-1 w-full p-4 md:p-8 md:ml-64 pt-20 md:pt-4">{children}</main>
     </div>
   )
 }

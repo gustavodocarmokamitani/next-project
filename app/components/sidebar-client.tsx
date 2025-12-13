@@ -14,10 +14,16 @@ import {
   Settings,
   LogOut,
   Shield,
+  Menu,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 const navigationItems = [
   {
@@ -73,6 +79,7 @@ const campeonatosItems = [
 export function SidebarClient() {
   const pathname = usePathname()
   const [isSystem, setIsSystem] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     // Verifica se é SYSTEM através da URL ou cookie
@@ -82,8 +89,11 @@ export function SidebarClient() {
         if (data?.role === "SYSTEM") {
           setIsSystem(true)
         }
+        setIsLoading(false)
       })
-      .catch(() => {})
+      .catch(() => {
+        setIsLoading(false)
+      })
   }, [])
 
   const handleLogout = async () => {
@@ -99,8 +109,8 @@ export function SidebarClient() {
     }
   }
 
-  return (
-    <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 border-r border-border bg-card p-6 flex-col">
+  const NavigationContent = () => (
+    <>
       {/* Logo */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-primary">Team Manager</h1>
@@ -108,60 +118,12 @@ export function SidebarClient() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-2">
-        {/* Seção Principal */}
-        {navigationItems.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href || (item.href !== "/home" && pathname?.startsWith(item.href))
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-              )}
-            >
-              <Icon className="h-5 w-5" />
-              <span>{item.label}</span>
-            </Link>
-          )
-        })}
-        
-        {/* Seção Campeonatos */}
-        <div className="my-4 border-t border-border" />
-        <div className="px-2 py-1">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Campeonatos
-          </p>
-        </div>
-        {campeonatosItems.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href || pathname?.startsWith(item.href)
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-              )}
-            >
-              <Icon className="h-5 w-5" />
-              <span>{item.label}</span>
-            </Link>
-          )
-        })}
-        
-        {/* Sistema Admin Section */}
-        {isSystem && (
+        {isLoading ? (
+          // Aguardando carregar a role - não exibe nada até saber qual role exibir
+          null
+        ) : isSystem ? (
           <>
-            <div className="my-4 border-t border-border" />
+            {/* Sistema Admin Section - apenas para SYSTEM */}
             <div className="px-2 py-1">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Sistema
@@ -179,6 +141,86 @@ export function SidebarClient() {
               <Shield className="h-5 w-5" />
               <span>Sistema</span>
             </Link>
+            
+            {/* Seção Campeonatos */}
+            <div className="my-4 border-t border-border" />
+            <div className="px-2 py-1">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Campeonatos
+              </p>
+            </div>
+            {campeonatosItems.map((item) => {
+              const Icon = item.icon
+              const isActive = pathname === item.href || pathname?.startsWith(item.href)
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
+          </>
+        ) : (
+          <>
+            {/* Seção Principal - apenas para não-SYSTEM */}
+            {navigationItems.map((item) => {
+              const Icon = item.icon
+              const isActive = pathname === item.href || (item.href !== "/home" && pathname?.startsWith(item.href))
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
+            
+            {/* Seção Campeonatos */}
+            <div className="my-4 border-t border-border" />
+            <div className="px-2 py-1">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Campeonatos
+              </p>
+            </div>
+            {campeonatosItems.map((item) => {
+              const Icon = item.icon
+              const isActive = pathname === item.href || pathname?.startsWith(item.href)
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
           </>
         )}
       </nav>
@@ -206,7 +248,36 @@ export function SidebarClient() {
           <span>Sair</span>
         </Button>
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 border-r border-border bg-card p-6 flex-col">
+        <NavigationContent />
+      </aside>
+
+      {/* Mobile Menu */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 border-b border-border bg-card p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-primary">Team Manager</h1>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Abrir menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-6">
+              <div className="flex flex-col h-full">
+                <NavigationContent />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </>
   )
 }
 

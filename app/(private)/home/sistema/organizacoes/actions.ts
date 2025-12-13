@@ -48,6 +48,7 @@ export async function updateOrganizacao(formData: FormData) {
 
   revalidatePath("/home/sistema/organizacoes")
   revalidatePath(`/home/sistema/organizacoes/${id}`)
-  redirect(`/home/sistema/organizacoes/${id}?success=Organização atualizada com sucesso!`)
+  revalidatePath(`/home/sistema/organizacoes/${id}/editar`)
+  redirect(`/home/sistema/organizacoes/${id}/editar?success=${encodeURIComponent("Organização atualizada com sucesso!")}`)
 }
 
