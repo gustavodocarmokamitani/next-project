@@ -25,74 +25,94 @@ const createSession = async (userId: string) => {
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, organization } = await req.json()
+    const { organizationName, adminName, adminPhone, adminEmail, password } = await req.json()
 
-    if (!email || !password) {
+    if (!organizationName || !adminName || !adminPhone || !adminEmail || !password) {
       return NextResponse.json(
-        { error: "Email e senha são obrigatórios." },
+        { error: "Todos os campos obrigatórios devem ser preenchidos." },
         { status: 400 },
       )
     }
 
-    if (password.length < 8) {
+    if (password.length < 6) {
       return NextResponse.json(
-        { error: "A senha deve ter pelo menos 8 caracteres." },
+        { error: "A senha deve ter pelo menos 6 caracteres." },
         { status: 400 },
       )
     }
 
-    const existing = await prisma.user.findUnique({ where: { email } })
-    if (existing) {
+    // Verifica se já existe uma organização com este nome
+    const existingOrg = await prisma.organization.findFirst({
+      where: { name: organizationName.trim() },
+    })
+
+    if (existingOrg) {
+      return NextResponse.json(
+        { error: "Já existe uma organização com este nome." },
+        { status: 409 },
+      )
+    }
+
+    // Verifica se já existe um usuário com este telefone
+    const existingUserByPhone = await prisma.user.findUnique({
+      where: { phone: adminPhone },
+    })
+
+    if (existingUserByPhone) {
+      return NextResponse.json(
+        { error: "Já existe um usuário com este telefone." },
+        { status: 409 },
+      )
+    }
+
+    // Verifica se já existe um usuário com este email
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: { email: adminEmail.trim() },
+    })
+
+    if (existingUserByEmail) {
       return NextResponse.json(
         { error: "Já existe um usuário com este email." },
         { status: 409 },
       )
     }
 
-    // Valida se o nome da organização foi fornecido
-    if (!organization || typeof organization !== "string" || organization.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Nome da organização é obrigatório." },
-        { status: 400 },
-      )
-    }
+    const passwordHash = await bcrypt.hash(password, 10)
 
-    const organizationName = organization.trim()
-
-    // Verifica se já existe uma organização com este nome
-    let organizacao = await prisma.organization.findUnique({
-      where: { name: organizationName },
-    })
-
-    // Se não existir, cria uma nova organização
-    if (!organizacao) {
-      organizacao = await prisma.organization.create({
+    // Cria a organização e o admin em uma transação
+    const result = await prisma.$transaction(async (tx) => {
+      // Cria a organização
+      const organizacao = await tx.organization.create({
         data: {
-          name: organizationName,
+          name: organizationName.trim(),
         },
       })
-    }
 
-    const passwordHash = await bcrypt.hash(password, 10)
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: passwordHash,
-        name: name || null,
-        organizationName: organizationName,
-        organizationId: organizacao.id, // Associa o usuário à organização
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
+      // Cria o usuário admin
+      const user = await tx.user.create({
+        data: {
+          phone: adminPhone,
+          password: passwordHash,
+          name: adminName.trim(),
+          email: adminEmail.trim(),
+          role: "ADMIN",
+          organizationId: organizacao.id,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          createdAt: true,
+        },
+      })
+
+      return { organizacao, user }
     })
 
-    const session = await createSession(user.id)
+    const session = await createSession(result.user.id)
 
-    const response = NextResponse.json({ user }, { status: 201 })
+    const response = NextResponse.json({ user: result.user }, { status: 201 })
     response.cookies.set({
       name: SESSION_COOKIE_NAME,
       value: session.token,

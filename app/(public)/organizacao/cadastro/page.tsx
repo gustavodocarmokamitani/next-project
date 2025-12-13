@@ -62,9 +62,14 @@ function OrganizacaoCadastroForm() {
         return
       }
 
-      // Redireciona para /home (conforme solicitado)
-      router.push("/home")
-      router.refresh()
+      // Se veio de um convite, redireciona para aceitar o convite
+      // Senão, redireciona para /home
+      if (inviteToken) {
+        router.push(`/campeonato/convite/${inviteToken}?autoAccept=true`)
+      } else {
+        router.push("/home")
+        router.refresh()
+      }
     } catch (err) {
       setError("Erro ao criar organização. Tente novamente.")
     } finally {
@@ -144,16 +149,17 @@ function OrganizacaoCadastroForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="adminEmail">E-mail do Administrador (opcional)</Label>
+            <Label htmlFor="adminEmail">E-mail da Organização *</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="adminEmail"
                 type="email"
-                placeholder="admin@organizacao.com"
+                placeholder="contato@organizacao.com"
                 value={formData.adminEmail}
                 onChange={handleChange}
                 className="pl-10"
+                required
               />
             </div>
           </div>

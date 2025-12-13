@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   try {
     const { organizationName, adminName, adminPhone, adminEmail, adminPassword } = await req.json()
 
-    if (!organizationName || !adminName || !adminPhone || !adminPassword) {
+    if (!organizationName || !adminName || !adminPhone || !adminEmail || !adminPassword) {
       return NextResponse.json(
         { error: "Todos os campos obrigatórios devem ser preenchidos." },
         { status: 400 },
@@ -54,13 +54,25 @@ export async function POST(req: Request) {
     }
 
     // Verifica se já existe um usuário com este telefone
-    const existingUser = await prisma.user.findUnique({
+    const existingUserByPhone = await prisma.user.findUnique({
       where: { phone: adminPhone },
     })
 
-    if (existingUser) {
+    if (existingUserByPhone) {
       return NextResponse.json(
         { error: "Já existe um usuário com este telefone." },
+        { status: 409 },
+      )
+    }
+
+    // Verifica se já existe um usuário com este email
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: { email: adminEmail.trim() },
+    })
+
+    if (existingUserByEmail) {
+      return NextResponse.json(
+        { error: "Já existe um usuário com este email." },
         { status: 409 },
       )
     }
@@ -82,7 +94,7 @@ export async function POST(req: Request) {
           phone: adminPhone,
           password: passwordHash,
           name: adminName.trim(),
-          email: adminEmail?.trim() || null,
+          email: adminEmail.trim(),
           role: "ADMIN",
           organizationId: organization.id,
         },

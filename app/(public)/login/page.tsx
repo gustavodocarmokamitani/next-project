@@ -17,6 +17,18 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Extrai o token do convite do parâmetro redirect se existir
+  const getInviteTokenFromRedirect = () => {
+    const redirect = searchParams.get("redirect")
+    if (redirect?.includes("/campeonato/convite/")) {
+      const match = redirect.match(/\/campeonato\/convite\/([^?]+)/)
+      return match ? match[1] : null
+    }
+    return null
+  }
+
+  const inviteToken = getInviteTokenFromRedirect()
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
@@ -31,8 +43,8 @@ function LoginForm() {
       
       const response = await authApi.login(loginPayload)
       
-      // Redireciona baseado no tipo de usuário retornado pela API
-      const redirectPath = (response as any).redirectPath || searchParams.get("redirect") || "/home"
+      // Prioriza o parâmetro redirect da URL, depois usa o redirectPath da API, senão usa /home
+      const redirectPath = searchParams.get("redirect") || (response as any).redirectPath || "/home"
       
       // Usa window.location para garantir que o cookie seja enviado corretamente
       window.location.href = redirectPath
@@ -118,7 +130,13 @@ function LoginForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Não tem uma conta?{" "}
-            <Link href="/register" className="text-primary hover:underline font-medium">
+            <Link 
+              href={inviteToken 
+                ? `/organizacao/cadastro?token=${inviteToken}`
+                : "/register"
+              } 
+              className="text-primary hover:underline font-medium"
+            >
               Criar conta
             </Link>
           </p>

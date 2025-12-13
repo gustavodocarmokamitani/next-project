@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { UserPlus, Phone, Lock, User, AlertCircle } from "lucide-react"
+import Confetti from "react-confetti"
 
 export default function AtletaConvitePage() {
   const params = useParams()
@@ -27,6 +28,7 @@ export default function AtletaConvitePage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showConfetti, setShowConfetti] = useState(false)
   const [categorias, setCategorias] = useState<{ id: string; name: string }[]>([])
 
   useEffect(() => {
@@ -48,7 +50,13 @@ export default function AtletaConvitePage() {
     const checkToken = async () => {
       try {
         const res = await fetch(`/api/atleta/invite/${token}`)
-        if (!res.ok) {
+        if (res.ok) {
+          // Dispara confetti quando o token é válido
+          setTimeout(() => {
+            setShowConfetti(true)
+            setTimeout(() => setShowConfetti(false), 5000)
+          }, 100)
+        } else {
           const data = await res.json()
           setError(data.error || "Link de convite inválido ou expirado.")
         }
@@ -121,7 +129,7 @@ export default function AtletaConvitePage() {
   if (error && (error.includes("inválido") || error?.includes("expirado"))) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-20">
-        <div className="w-full max-w-md text-center">
+        <div className="w-full max-w-md text-center relative z-10">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4">
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
@@ -133,8 +141,21 @@ export default function AtletaConvitePage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-20">
-      <div className="w-full max-w-md">
+    <main className="min-h-screen flex items-center justify-center px-4 py-20 relative">
+      {showConfetti && (
+        <Confetti
+          width={typeof window !== 'undefined' ? window.innerWidth : 0}
+          height={typeof window !== 'undefined' ? window.innerHeight : 0}
+          recycle={false}
+          numberOfPieces={200}
+          colors={["#a864fd", "#29cdff", "#78ff44", "#ff718d", "#fdff6a"]}
+          initialVelocityY={-50}
+          initialVelocityX={10}
+          gravity={1.2}
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 1, pointerEvents: 'none' }}
+        />
+      )}
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
             <UserPlus className="h-8 w-8 text-primary" />

@@ -2,10 +2,11 @@ import { postJson } from "./api-client"
 import { routes } from "./routes"
 
 type RegisterPayload = {
-  name?: string
-  email: string
+  organizationName: string
+  adminName: string
+  adminPhone: string
+  adminEmail: string
   password: string
-  organization?: string
 }
 
 type LoginPayload = {

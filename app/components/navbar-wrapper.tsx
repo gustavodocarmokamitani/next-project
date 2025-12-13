@@ -11,7 +11,11 @@ export function NavbarWrapper() {
     pathname === "/register" ||
     pathname.startsWith("/home") ||
     pathname.startsWith("/gerente") ||
-    pathname.startsWith("/atleta")
+    pathname.startsWith("/atleta") ||
+    pathname.startsWith("/campeonato/convite") ||
+    pathname.startsWith("/atleta/convite") ||
+    pathname.startsWith("/organizacao/cadastro") ||
+    pathname.startsWith("/gerente/convite")
 
   if (hideNavbar) {
     return null

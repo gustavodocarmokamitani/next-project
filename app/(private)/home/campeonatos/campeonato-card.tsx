@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Pencil, Trash2, Trophy, Calendar, MapPin, Layers, Mail, BarChart3, Copy, Link2 } from "lucide-react"
+import { Pencil, Trash2, Trophy, Calendar, MapPin, Layers, Mail, BarChart3, Link2 } from "lucide-react"
 import { DeleteCampeonatoDialog } from "./delete-campeonato-dialog"
-import { getCampeonatoConviteLink } from "./actions"
 import type { CampeonatoDTO } from "./queries"
 
 type CampeonatoCardProps = {
@@ -13,10 +13,8 @@ type CampeonatoCardProps = {
 }
 
 export function CampeonatoCard({ campeonato }: CampeonatoCardProps) {
+  const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [inviteLink, setInviteLink] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [loadingLink, setLoadingLink] = useState(false)
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -26,35 +24,8 @@ export function CampeonatoCard({ campeonato }: CampeonatoCardProps) {
     }).format(new Date(date))
   }
 
-  const handleGetInviteLink = async () => {
-    setLoadingLink(true)
-    try {
-      const formData = new FormData()
-      formData.append("campeonatoId", campeonato.id)
-      const link = await getCampeonatoConviteLink(formData)
-      if (link) {
-        setInviteLink(link)
-      }
-    } catch (error) {
-      console.error("Erro ao obter link de convite:", error)
-    } finally {
-      setLoadingLink(false)
-    }
-  }
-
-  const handleCopyLink = async () => {
-    if (!inviteLink) {
-      await handleGetInviteLink()
-      return
-    }
-    
-    try {
-      await navigator.clipboard.writeText(inviteLink)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error("Erro ao copiar link:", err)
-    }
+  const handleGerarLink = () => {
+    router.push(`/home/campeonatos/${campeonato.id}/convites`)
   }
 
   return (
@@ -118,25 +89,10 @@ export function CampeonatoCard({ campeonato }: CampeonatoCardProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleCopyLink}
-            disabled={loadingLink}
+            onClick={handleGerarLink}
           >
-            {loadingLink ? (
-              <>
-                <Link2 className="h-4 w-4 mr-2 animate-spin" />
-                Carregando...
-              </>
-            ) : copied ? (
-              <>
-                <Copy className="h-4 w-4 mr-2" />
-                Link Copiado!
-              </>
-            ) : (
-              <>
-                <Link2 className="h-4 w-4 mr-2" />
-                Gerar Link de Convite
-              </>
-            )}
+            <Link2 className="h-4 w-4 mr-2" />
+            Gerar Link de Convite
           </Button>
           <Button
             variant="destructive"

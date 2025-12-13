@@ -8,15 +8,12 @@ export async function GET(
   try {
     const { token } = await params
 
-    // Busca o convite público (organizationId null) ou um convite específico
-    const convite = await (prisma as any).championshipInvite.findFirst({
+    // Busca PRIMEIRO o convite público (organizationId null)
+    // Se não encontrar, busca um convite específico
+    let convite = await (prisma as any).championshipInvite.findFirst({
       where: {
         token,
-        // Prioriza convite público, mas também aceita específico
-        OR: [
-          { organizationId: null },
-          { organizationId: { not: null } },
-        ],
+        organizationId: null, // Convite público
       },
       include: {
         championship: {
@@ -36,11 +33,35 @@ export async function GET(
           },
         },
       },
-      orderBy: [
-        // Prioriza convite público (null primeiro)
-        { organizationId: "asc" },
-      ],
     })
+
+    // Se não encontrou convite público, busca um convite específico
+    if (!convite) {
+      convite = await (prisma as any).championshipInvite.findFirst({
+        where: {
+          token,
+          organizationId: { not: null },
+        },
+        include: {
+          championship: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              startDate: true,
+              endDate: true,
+              location: true,
+            },
+          },
+          organization: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      })
+    }
 
     if (!convite) {
       return NextResponse.json(
@@ -49,7 +70,10 @@ export async function GET(
       )
     }
 
-    if (convite.used) {
+    // Para convites públicos (organizationId null), NÃO verifica se está 'used'
+    // pois múltiplas organizações podem aceitar o mesmo convite público
+    // Para convites específicos, verifica se já foi usado
+    if (convite.organizationId !== null && convite.used) {
       return NextResponse.json(
         { error: "Este convite já foi utilizado" },
         { status: 400 },

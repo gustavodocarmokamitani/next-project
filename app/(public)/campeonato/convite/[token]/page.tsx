@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Trophy, Calendar, MapPin, AlertCircle, CheckCircle } from "lucide-react"
+import Confetti from "react-confetti"
 
 export default function CampeonatoConvitePage() {
   const params = useParams()
@@ -14,6 +15,7 @@ export default function CampeonatoConvitePage() {
   const [isAccepting, setIsAccepting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
   const [convite, setConvite] = useState<{
     championshipId: string
     championshipName: string
@@ -24,28 +26,6 @@ export default function CampeonatoConvitePage() {
     organizationName: string | null
     expiresAt: string
   } | null>(null)
-
-  useEffect(() => {
-    const fetchConvite = async () => {
-      try {
-        const res = await fetch(`/api/campeonato/invite/${token}`)
-        const data = await res.json()
-
-        if (!res.ok) {
-          setError(data.error || "Erro ao carregar convite")
-          return
-        }
-
-        setConvite(data.convite)
-      } catch (err) {
-        setError("Erro ao carregar convite")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchConvite()
-  }, [token])
 
   const handleAccept = async () => {
     setIsAccepting(true)
@@ -67,19 +47,55 @@ export default function CampeonatoConvitePage() {
         } else {
           setError(data.error || "Erro ao aceitar convite")
         }
+        setIsAccepting(false)
         return
       }
 
       setSuccess(true)
-      setTimeout(() => {
-        router.push("/home")
-      }, 2000)
     } catch (err) {
       setError("Erro ao aceitar convite")
-    } finally {
       setIsAccepting(false)
     }
   }
+
+  useEffect(() => {
+    const fetchConvite = async () => {
+      try {
+        const res = await fetch(`/api/campeonato/invite/${token}`)
+        const data = await res.json()
+
+        if (!res.ok) {
+          setError(data.error || "Erro ao carregar convite")
+          return
+        }
+
+        setConvite(data.convite)
+        // Dispara confetti quando o convite é carregado com sucesso
+        setTimeout(() => {
+          setShowConfetti(true)
+          setTimeout(() => setShowConfetti(false), 5000)
+        }, 100)
+
+        // Se voltou do login, tenta aceitar automaticamente após um pequeno delay
+        const urlParams = new URLSearchParams(window.location.search)
+        if (urlParams.get("autoAccept") === "true") {
+          // Remove o parâmetro da URL
+          window.history.replaceState({}, "", window.location.pathname)
+          // Aguarda um pouco para garantir que a sessão foi estabelecida
+          setTimeout(() => {
+            handleAccept()
+          }, 500)
+        }
+      } catch (err) {
+        setError("Erro ao carregar convite")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchConvite()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
 
   const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -120,18 +136,35 @@ export default function CampeonatoConvitePage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full rounded-lg border border-border bg-card p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background relative">
+        {showConfetti && (
+          <Confetti
+            width={typeof window !== 'undefined' ? window.innerWidth : 0}
+            height={typeof window !== 'undefined' ? window.innerHeight : 0}
+            recycle={false}
+            numberOfPieces={100}
+            colors={["#a864fd", "#29cdff", "#78ff44", "#ff718d", "#fdff6a"]}
+            initialVelocityY={-50}
+            initialVelocityX={10}
+            gravity={1.2}
+            style={{ position: 'fixed', top: 0, left: 0, zIndex: 1, pointerEvents: 'none' }}
+          />
+        )}
+        <div className="max-w-md w-full rounded-lg border border-border bg-card p-8 text-center relative z-10">
           <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">
             Convite Aceito!
           </h1>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-6">
             Você aceitou o convite para participar do campeonato.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Redirecionando...
-          </p>
+          <Button
+            onClick={() => router.push("/home")}
+            className="w-full"
+            size="lg"
+          >
+            Ir para o Home
+          </Button>
         </div>
       </div>
     )
@@ -142,8 +175,21 @@ export default function CampeonatoConvitePage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="max-w-2xl w-full rounded-lg border border-border bg-card p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background relative">
+      {showConfetti && (
+        <Confetti
+          width={typeof window !== 'undefined' ? window.innerWidth : 0}
+          height={typeof window !== 'undefined' ? window.innerHeight : 0}
+          recycle={false}
+          numberOfPieces={100}
+          colors={["#a864fd", "#29cdff", "#78ff44", "#ff718d", "#fdff6a"]}
+          initialVelocityY={-50}
+          initialVelocityX={10}
+          gravity={1.2}
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 1, pointerEvents: 'none' }}
+        />
+      )}
+      <div className="max-w-2xl w-full rounded-lg border border-border bg-card p-8 space-y-6 relative z-10">
         <div className="text-center">
           <Trophy className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-foreground mb-2">
@@ -206,7 +252,7 @@ export default function CampeonatoConvitePage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => router.push("/login")}
+                onClick={() => router.push(`/login?redirect=${encodeURIComponent(`/campeonato/convite/${token}?autoAccept=true`)}`)}
                 className="w-full"
               >
                 Fazer Login
@@ -223,7 +269,7 @@ export default function CampeonatoConvitePage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => router.push("/login")}
+                onClick={() => router.push(`/login?redirect=${encodeURIComponent(`/campeonato/convite/${token}?autoAccept=true`)}`)}
                 disabled={isAccepting}
               >
                 Fazer Login

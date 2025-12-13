@@ -7,16 +7,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authApi } from "@/lib/auth-api"
-import { UserPlus, Mail, Lock, User, Building2 } from "lucide-react"
+import { UserPlus, Mail, Lock, User, Building2, Phone } from "lucide-react"
 
 export default function RegisterPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    organizationName: "",
+    adminName: "",
+    adminPhone: "",
+    adminEmail: "",
     password: "",
     confirmPassword: "",
-    organization: "",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,10 +42,11 @@ export default function RegisterPage() {
 
     try {
       await authApi.register({
-        name: formData.name,
-        email: formData.email,
+        organizationName: formData.organizationName,
+        adminName: formData.adminName,
+        adminPhone: formData.adminPhone,
+        adminEmail: formData.adminEmail,
         password: formData.password,
-        organization: formData.organization,
       })
       // Redireciona para login após registro bem-sucedido
       router.push("/login")
@@ -76,63 +78,79 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome completo</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="name"
-                type="text"
-                placeholder="João Silva"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="organization">Organização / Equipe</Label>
+            <Label htmlFor="organizationName">Nome da Organização *</Label>
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                id="organization"
+                id="organizationName"
                 type="text"
-                placeholder="Nome da sua equipe ou organização"
-                value={formData.organization}
+                placeholder="Ex: Federação Brasileira de Beisebol"
+                value={formData.organizationName}
                 onChange={handleChange}
-                required
                 className="pl-10"
+                required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <Label htmlFor="adminName">Nome do Administrador *</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="adminName"
+                type="text"
+                placeholder="Seu nome completo"
+                value={formData.adminName}
+                onChange={handleChange}
+                className="pl-10"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="adminPhone">Telefone do Administrador *</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="adminPhone"
+                type="tel"
+                placeholder="(00) 00000-0000"
+                value={formData.adminPhone}
+                onChange={handleChange}
+                className="pl-10"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="adminEmail">E-mail da Organização *</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="adminEmail"
+                type="email"
+                placeholder="contato@organizacao.com"
+                value={formData.adminEmail}
+                onChange={handleChange}
+                className="pl-10"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Senha *</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Mínimo 6 caracteres"
                 value={formData.password}
                 onChange={handleChange}
                 required
@@ -140,19 +158,16 @@ export default function RegisterPage() {
                 className="pl-10"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Mínimo de 6 caracteres
-            </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirmar senha</Label>
+            <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Digite a senha novamente"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
